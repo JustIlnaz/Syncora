@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Syncora")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+57d0c27e27e25eb0a4b48b028499adf369291f84")]
 [assembly: System.Reflection.AssemblyProductAttribute("Syncora")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Syncora")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
