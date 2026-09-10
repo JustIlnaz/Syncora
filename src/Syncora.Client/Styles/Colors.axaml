@@ -1,0 +1,28 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Main surfaces -->
+    <SolidColorBrush x:Key="WindowBackground" Color="#F7F6FE" />
+    <SolidColorBrush x:Key="SurfaceBackground" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SidebarBackground" Color="#F0EEFC" />
+    <SolidColorBrush x:Key="SurfaceSecondary" Color="#F4F2FC" />
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="LabelPrimary" Color="#30264A" />
+    <SolidColorBrush x:Key="LabelSecondary" Color="#756D88" />
+    <SolidColorBrush x:Key="LabelMuted" Color="#9B94AB" />
+
+    <!-- Syncora purple accent -->
+    <SolidColorBrush x:Key="AccentPurple" Color="#8B70FB" />
+    <SolidColorBrush x:Key="AccentPurpleDark" Color="#7656D6" />
+    <SolidColorBrush x:Key="AccentPurpleLight" Color="#EAE4FF" />
+    <SolidColorBrush x:Key="AccentPurpleTint" Color="#F3EFFF" />
+
+    <!-- Borders / separators -->
+    <SolidColorBrush x:Key="BorderSoft" Color="#E7E3F2" />
+
+    <!-- Soft category colors from the reference UI -->
+    <SolidColorBrush x:Key="PastelRed" Color="#F7B8C7" />
+    <SolidColorBrush x:Key="PastelGreen" Color="#BFE8D0" />
+    <SolidColorBrush x:Key="PastelBlue" Color="#B9DDF5" />
+    <SolidColorBrush x:Key="PastelYellow" Color="#F4DFAE" />
+</ResourceDictionary>

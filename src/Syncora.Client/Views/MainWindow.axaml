@@ -7,14 +7,18 @@
         x:Class="Syncora.Client.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Syncora">
+        Title="Syncora"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        TransparencyLevelHint="Mica, AcrylicBlur"
+        Background="Transparent"
+        Width="1000" Height="650">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <ContentControl Content="{Binding CurrentView}" />
 
 </Window>
