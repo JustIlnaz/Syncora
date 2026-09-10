@@ -1,11 +1,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Syncora.Client.Messages;
+using Syncora.Client.Models.Auth;
+using Syncora.Client.Services;
+using System;
 using System.Threading.Tasks;
 
 namespace Syncora.Client.ViewModels
 {
     public partial class AuthViewModel : ViewModelBase
     {
+        private readonly AuthService _authService;
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HeaderTitle))]
         [NotifyPropertyChangedFor(nameof(SubmitButtonText))]
@@ -14,7 +21,12 @@ namespace Syncora.Client.ViewModels
 
         public string HeaderTitle => IsLoginMode ? "Вход" : "Регистрация";
         public string SubmitButtonText => IsLoginMode ? "Войти" : "Зарегистрироваться";
-        public string ToggleModeText => IsLoginMode ? "Нет аккаунта? Зарегистрироваться" : "Уже есть аккаунт? Войти";
+        public string ToggleModeText => IsLoginMode
+            ? "Нет аккаунта? Зарегистрироваться"
+            : "Уже есть аккаунт? Войти";
+
+        [ObservableProperty]
+        private string name = string.Empty;
 
         [ObservableProperty]
         private string email = string.Empty;
@@ -27,6 +39,14 @@ namespace Syncora.Client.ViewModels
 
         [ObservableProperty]
         private string errorMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool isLoading;
+
+        public AuthViewModel(AuthService authService)
+        {
+            _authService = authService;
+        }
 
         [RelayCommand]
         private void ToggleMode()
@@ -46,16 +66,57 @@ namespace Syncora.Client.ViewModels
                 return;
             }
 
-            if (!IsLoginMode && Password != ConfirmPassword)
+            if (!IsLoginMode)
             {
-                ErrorMessage = "Пароли не совпадают.";
-                return;
+                if (string.IsNullOrWhiteSpace(Name))
+                {
+                    ErrorMessage = "Имя обязательно.";
+                    return;
+                }
+
+                if (Password.Length < 6)
+                {
+                    ErrorMessage = "Пароль должен быть минимум 6 символов.";
+                    return;
+                }
+
+                if (Password != ConfirmPassword)
+                {
+                    ErrorMessage = "Пароли не совпадают.";
+                    return;
+                }
             }
 
-            // TODO: Implement actual authentication via REST API Service
-            await Task.Delay(500); // Simulate network call
+            IsLoading = true;
 
-            // Simulate navigation to main app for now
+            try
+            {
+                LoginResponse response;
+
+                if (IsLoginMode)
+                {
+                    response = await _authService.LoginAsync(Email, Password);
+                }
+                else
+                {
+                    response = await _authService.RegisterAsync(Name, Email, Password);
+                }
+
+                WeakReferenceMessenger.Default.Send(
+                    new NavigateToMainMessage(response.Name, response.Token));
+            }
+            catch (ApiException ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+            catch (Exception)
+            {
+                ErrorMessage = "Не удалось подключиться к серверу.";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
     }
 }
