@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Syncora.Data;
-using Syncora.Data.Configurations;
 using Syncora.Helpers;
 using Syncora.Services;
 

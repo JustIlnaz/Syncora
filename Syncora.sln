@@ -3,7 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syncora", "Syncora\Syncora.csproj", "{6854C78B-380F-44D8-A26A-721CC11D4A64}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syncora.Api", "src\Syncora.Api\Syncora.Api.csproj", "{6854C78B-380F-44D8-A26A-721CC11D4A64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syncora.Client", "src\Syncora.Client\Syncora.Client.csproj", "{7854C78B-380F-44D8-A26A-721CC11D4A65}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B1B2C3D4-E5F6-7890-ABCD-EF1234567891}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syncora.Api.Tests", "tests\Syncora.Api.Tests\Syncora.Api.Tests.csproj", "{8854C78B-380F-44D8-A26A-721CC11D4A66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syncora.IntegrationTests", "tests\Syncora.IntegrationTests\Syncora.IntegrationTests.csproj", "{9854C78B-380F-44D8-A26A-721CC11D4A67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +25,27 @@ Global
 		{6854C78B-380F-44D8-A26A-721CC11D4A64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6854C78B-380F-44D8-A26A-721CC11D4A64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6854C78B-380F-44D8-A26A-721CC11D4A64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7854C78B-380F-44D8-A26A-721CC11D4A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7854C78B-380F-44D8-A26A-721CC11D4A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7854C78B-380F-44D8-A26A-721CC11D4A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7854C78B-380F-44D8-A26A-721CC11D4A65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8854C78B-380F-44D8-A26A-721CC11D4A66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8854C78B-380F-44D8-A26A-721CC11D4A66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8854C78B-380F-44D8-A26A-721CC11D4A66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8854C78B-380F-44D8-A26A-721CC11D4A66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9854C78B-380F-44D8-A26A-721CC11D4A67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9854C78B-380F-44D8-A26A-721CC11D4A67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9854C78B-380F-44D8-A26A-721CC11D4A67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9854C78B-380F-44D8-A26A-721CC11D4A67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6854C78B-380F-44D8-A26A-721CC11D4A64} = {A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
+		{7854C78B-380F-44D8-A26A-721CC11D4A65} = {A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
+		{8854C78B-380F-44D8-A26A-721CC11D4A66} = {B1B2C3D4-E5F6-7890-ABCD-EF1234567891}
+		{9854C78B-380F-44D8-A26A-721CC11D4A67} = {B1B2C3D4-E5F6-7890-ABCD-EF1234567891}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {471428D5-A8C6-44A7-B9C4-D8BBCFE984A2}
