@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 3,
   "targets": {
     "net8.0": {
       "Humanizer.Core/2.14.1": {
@@ -3070,24 +3070,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Ильназ\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Asus\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Ильназ\\Downloads\\Telegram Desktop\\Syncora\\Syncora\\Syncora\\Syncora.csproj",
+      "projectUniqueName": "C:\\Users\\Asus\\Desktop\\Syncora\\Syncora\\Syncora\\Syncora.csproj",
       "projectName": "Syncora",
-      "projectPath": "C:\\Users\\Ильназ\\Downloads\\Telegram Desktop\\Syncora\\Syncora\\Syncora\\Syncora.csproj",
-      "packagesPath": "C:\\Users\\Ильназ\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Ильназ\\Downloads\\Telegram Desktop\\Syncora\\Syncora\\Syncora\\obj\\",
+      "projectPath": "C:\\Users\\Asus\\Desktop\\Syncora\\Syncora\\Syncora\\Syncora.csproj",
+      "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Asus\\Desktop\\Syncora\\Syncora\\Syncora\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Ильназ\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -3100,7 +3095,6 @@
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {}
         }
@@ -3114,12 +3108,10 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "10.0.300"
+      }
     },
     "frameworks": {
       "net8.0": {
-        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": {
@@ -3168,7 +3160,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
