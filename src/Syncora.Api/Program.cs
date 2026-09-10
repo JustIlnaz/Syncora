@@ -15,6 +15,8 @@ builder.Services.AddDbContext<SyncoraDbContext>(options =>
 
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<CalendarService>();
+builder.Services.AddScoped<EventService>();
 
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
