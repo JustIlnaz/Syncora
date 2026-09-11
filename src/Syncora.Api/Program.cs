@@ -20,6 +20,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CalendarService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<MeetingService>();
+builder.Services.AddScoped<MeetingSearchService>();
 
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
