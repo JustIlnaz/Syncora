@@ -15,11 +15,16 @@ namespace Syncora.Client.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HeaderTitle))]
+        [NotifyPropertyChangedFor(nameof(Subtitle))]
         [NotifyPropertyChangedFor(nameof(SubmitButtonText))]
         [NotifyPropertyChangedFor(nameof(ToggleModeText))]
         private bool isLoginMode = true;
 
-        public string HeaderTitle => IsLoginMode ? "Вход" : "Регистрация";
+        public string HeaderTitle => IsLoginMode ? "Добро пожаловать!" : "Создайте аккаунт";
+        public string Subtitle => IsLoginMode
+            ? "Войдите в свой аккаунт, чтобы продолжить работу с расписанием, списками и планами."
+            : "Это займёт меньше минуты.";
+
         public string SubmitButtonText => IsLoginMode ? "Войти" : "Зарегистрироваться";
         public string ToggleModeText => IsLoginMode
             ? "Нет аккаунта? Зарегистрироваться"
@@ -42,6 +47,9 @@ namespace Syncora.Client.ViewModels
 
         [ObservableProperty]
         private bool isLoading;
+
+        [ObservableProperty]
+        private bool rememberMe;
 
         public AuthViewModel(AuthService authService)
         {

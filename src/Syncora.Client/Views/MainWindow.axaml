@@ -6,14 +6,15 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Syncora.Client.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/syncora.ico"
         Title="Syncora"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
         ExtendClientAreaChromeHints="PreferSystemChrome"
         TransparencyLevelHint="Mica, AcrylicBlur"
         Background="Transparent"
-        Width="1000" Height="650">
+        Width="520" Height="900"
+        MinWidth="480" MinHeight="860">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
@@ -21,4 +22,4 @@
 
     <ContentControl Content="{Binding CurrentView}" />
 
-</Window>
+</Window>   
