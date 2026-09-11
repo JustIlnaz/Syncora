@@ -20,6 +20,8 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <ContentControl Content="{Binding CurrentView}" />
+    <ContentControl Content="{Binding CurrentView}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch" />
 
 </Window>   

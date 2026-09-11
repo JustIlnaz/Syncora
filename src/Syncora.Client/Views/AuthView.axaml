@@ -5,16 +5,18 @@
              x:DataType="vm:AuthViewModel">
 
     <Grid Background="{DynamicResource WindowBackground}">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+        <ScrollViewer x:Name="AuthScrollViewer"
+                      HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto"
                       Padding="24,28,24,32">
-            <Border Background="{DynamicResource SurfaceBackground}"
-                    Width="460"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Center"
-                    CornerRadius="16"
-                    BoxShadow="0 8 32 0 #1A000000"
-                    Padding="40,44">
+            <Grid MinHeight="{Binding Viewport.Height, ElementName=AuthScrollViewer}">
+                <Border Background="{DynamicResource SurfaceBackground}"
+                        Width="460"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        CornerRadius="16"
+                        BoxShadow="0 8 32 0 #1A000000"
+                        Padding="40,44">
 
                 <StackPanel Spacing="16">
                     <!-- Logo -->
@@ -146,7 +148,8 @@
                                    FontSize="13" />
                     </Button>
                 </StackPanel>
-            </Border>
+                </Border>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </UserControl>
