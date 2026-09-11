@@ -1,7 +1,9 @@
+using System.ComponentModel;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Syncora.Data;
 using Syncora.Helpers;
@@ -17,6 +19,7 @@ builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CalendarService>();
 builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<UserService>();
 
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -55,7 +58,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new Syncora.Helpers.TimeSpanConverter());
+    });
+
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -65,6 +74,13 @@ builder.Services.AddSwaggerGen(c =>
         Title = "Syncora API",
         Version = "v1",
         Description = "API для приложения Syncora — календарь, встречи, списки покупок"
+    });
+
+    c.MapType<TimeSpan>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Format = "time",
+        Example = new OpenApiString("10:00:00")
     });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
