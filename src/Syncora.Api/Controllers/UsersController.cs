@@ -40,6 +40,33 @@ namespace Syncora.Controllers
             return Ok(result);
         }
 
+        [HttpPost("me/avatar")]
+        [RequestSizeLimit(2_097_152)]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Файл аватара не передан." });
+
+            try
+            {
+                var result = await _userService.UploadAvatarAsync(CurrentUserId, file);
+                if (result == null) return NotFound(new { message = "Профиль не найден" });
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("me/avatar")]
+        public async Task<IActionResult> DeleteAvatar()
+        {
+            var result = await _userService.DeleteAvatarAsync(CurrentUserId);
+            if (result == null) return NotFound(new { message = "Профиль не найден" });
+            return Ok(result);
+        }
+
         [HttpGet("me/working-hours")]
         public async Task<IActionResult> GetWorkingHours()
         {
@@ -83,6 +110,21 @@ namespace Syncora.Controllers
             var ok = await _userService.RemoveContactAsync(CurrentUserId, contactId);
             if (!ok) return NotFound(new { message = "Контакт не найден" });
             return NoContent();
+        }
+
+        [HttpDelete("me")]
+        public async Task<IActionResult> DeleteMe()
+        {
+            try
+            {
+                var ok = await _userService.DeleteAccountAsync(CurrentUserId);
+                if (!ok) return NotFound(new { message = "Профиль не найден" });
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
     }
 }

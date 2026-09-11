@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Syncora.Client.ViewModels.Pages"
+             x:Class="Syncora.Client.Views.Pages.PlaceholderPageView"
+             x:DataType="vm:PlaceholderPageViewModel">
+
+    <Grid Background="{DynamicResource WindowBackground}">
+        <Border Background="{DynamicResource SurfaceBackground}"
+                CornerRadius="16"
+                BoxShadow="0 2 12 0 #14000000"
+                Padding="32"
+                Margin="{DynamicResource PagePadding}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="12"
+                        MaxWidth="480">
+                <Border Width="64" Height="64"
+                        CornerRadius="32"
+                        Background="{DynamicResource AccentPurpleTint}"
+                        HorizontalAlignment="Center">
+                    <PathIcon Data="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM11 17H13V15H11V17ZM11 7H13V13H11V7Z"
+                              Width="28" Height="28"
+                              Foreground="{DynamicResource AccentPurple}" />
+                </Border>
+
+                <TextBlock Text="{Binding Title}"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource LabelPrimary}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center" />
+
+                <TextBlock Text="{Binding Description}"
+                           FontSize="14"
+                           Foreground="{DynamicResource LabelSecondary}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           LineHeight="22" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -32,7 +32,9 @@ public partial class App : Application
 
             services.AddSingleton<HttpClient>();
             services.AddSingleton<ApiClient>();
+            services.AddSingleton<AuthSessionStore>();
             services.AddSingleton<AuthService>();
+            services.AddSingleton<UserProfileService>();
             services.AddTransient<AuthViewModel>();
             services.AddSingleton<MainWindowViewModel>();
 

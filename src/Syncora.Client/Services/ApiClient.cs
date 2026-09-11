@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -65,15 +66,72 @@ public class ApiClient
     public async Task<T> GetAsync<T>(string url)
     {
         var response = await _httpClient.GetAsync(url);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new ApiException(response.StatusCode,
-                $"Ошибка сервера: {(int)response.StatusCode}");
-        }
-
+        await EnsureSuccessAsync(response);
         var result = await response.Content.ReadFromJsonAsync<T>(JsonOptions);
         return result ?? throw new ApiException(response.StatusCode, "Пустой ответ сервера");
+    }
+
+    public async Task<TResponse> PutAsync<TRequest, TResponse>(string url, TRequest request)
+    {
+        var response = await _httpClient.PutAsJsonAsync(url, request, JsonOptions);
+        await EnsureSuccessAsync(response);
+        var result = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions);
+        return result ?? throw new ApiException(response.StatusCode, "Пустой ответ сервера");
+    }
+
+    public async Task DeleteAsync(string url)
+    {
+        var response = await _httpClient.DeleteAsync(url);
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task<TResponse> PostMultipartAsync<TResponse>(
+        string url,
+        Stream stream,
+        string fileName,
+        string contentType)
+    {
+        using var content = new MultipartFormDataContent();
+        var streamContent = new StreamContent(stream);
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        content.Add(streamContent, "file", fileName);
+
+        var response = await _httpClient.PostAsync(url, content);
+        await EnsureSuccessAsync(response);
+
+        var result = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions);
+        return result ?? throw new ApiException(response.StatusCode, "Пустой ответ сервера");
+    }
+
+    public async Task<TResponse> DeleteWithBodyAsync<TResponse>(string url)
+    {
+        var response = await _httpClient.DeleteAsync(url);
+        await EnsureSuccessAsync(response);
+
+        var result = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions);
+        return result ?? throw new ApiException(response.StatusCode, "Пустой ответ сервера");
+    }
+
+    private static async Task EnsureSuccessAsync(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode)
+            return;
+
+        var errorContent = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            using var doc = JsonDocument.Parse(errorContent);
+            if (doc.RootElement.TryGetProperty("message", out var messageProp))
+            {
+                throw new ApiException(response.StatusCode,
+                    messageProp.GetString() ?? "Ошибка сервера");
+            }
+        }
+        catch (JsonException) { }
+
+        throw new ApiException(response.StatusCode,
+            $"Ошибка сервера: {(int)response.StatusCode}");
     }
 }
 

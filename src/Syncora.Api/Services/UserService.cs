@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Syncora.Data;
 using Syncora.DTO.User;
 using Syncora.Models;
@@ -7,11 +9,16 @@ namespace Syncora.Services
 {
     public class UserService
     {
-        private readonly SyncoraDbContext _context;
+        private static readonly string[] AllowedAvatarExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+        private const long MaxAvatarBytes = 2 * 1024 * 1024;
 
-        public UserService(SyncoraDbContext context)
+        private readonly SyncoraDbContext _context;
+        private readonly IWebHostEnvironment _environment;
+
+        public UserService(SyncoraDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         public async Task<UserDto?> GetProfileAsync(Guid userId)
@@ -38,6 +45,58 @@ namespace Syncora.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+            return MapToDto(user);
+        }
+
+        public async Task<UserDto?> UploadAvatarAsync(Guid userId, IFormFile file)
+        {
+            if (file.Length == 0)
+                throw new InvalidOperationException("Файл аватара пустой.");
+
+            if (file.Length > MaxAvatarBytes)
+                throw new InvalidOperationException("Размер аватара не должен превышать 2 МБ.");
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!AllowedAvatarExtensions.Contains(extension))
+                throw new InvalidOperationException("Допустимые форматы: JPG, PNG, WEBP.");
+
+            var user = await _context.Users
+                .Include(u => u.WorkingHours)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return null;
+
+            await DeleteAvatarFileAsync(user.AvatarUrl);
+
+            var uploadsDir = GetAvatarsDirectory();
+
+            var fileName = $"{userId}{extension}";
+            var physicalPath = Path.Combine(uploadsDir, fileName);
+
+            await using (var stream = File.Create(physicalPath))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            user.AvatarUrl = $"/avatars/{fileName}";
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return MapToDto(user);
+        }
+
+        public async Task<UserDto?> DeleteAvatarAsync(Guid userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.WorkingHours)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null) return null;
+
+            await DeleteAvatarFileAsync(user.AvatarUrl);
+            user.AvatarUrl = null;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
             return MapToDto(user);
         }
 
@@ -133,6 +192,59 @@ namespace Syncora.Services
             _context.Contacts.Remove(contact);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> DeleteAccountAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            var hasEvents = await _context.Events.AnyAsync(e => e.CreatorId == userId);
+            var hasMeetings = await _context.Meetings.AnyAsync(m => m.CreatorId == userId);
+            if (hasEvents || hasMeetings)
+            {
+                throw new InvalidOperationException(
+                    "Нельзя удалить профиль с активными событиями или встречами.");
+            }
+
+            var participations = await _context.MeetingParticipants
+                .Where(p => p.UserId == userId)
+                .ToListAsync();
+            _context.MeetingParticipants.RemoveRange(participations);
+
+            var contacts = await _context.Contacts
+                .Where(c => c.UserId == userId || c.ContactUserId == userId)
+                .ToListAsync();
+            _context.Contacts.RemoveRange(contacts);
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        private string GetAvatarsDirectory()
+        {
+            var webRoot = _environment.WebRootPath
+                ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+            var uploadsDir = Path.Combine(webRoot, "avatars");
+            Directory.CreateDirectory(uploadsDir);
+            return uploadsDir;
+        }
+
+        private async Task DeleteAvatarFileAsync(string? avatarUrl)
+        {
+            if (string.IsNullOrWhiteSpace(avatarUrl))
+                return;
+
+            var fileName = Path.GetFileName(avatarUrl);
+            if (string.IsNullOrWhiteSpace(fileName))
+                return;
+
+            var physicalPath = Path.Combine(GetAvatarsDirectory(), fileName);
+            if (File.Exists(physicalPath))
+            {
+                await Task.Run(() => File.Delete(physicalPath));
+            }
         }
 
         private static UserDto MapToDto(User u)

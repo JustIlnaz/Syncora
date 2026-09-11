@@ -8,6 +8,8 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/syncora.ico"
         Title="Syncora"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
         ExtendClientAreaChromeHints="PreferSystemChrome"
@@ -24,4 +26,4 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch" />
 
-</Window>   
+</Window>

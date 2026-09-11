@@ -5,26 +5,46 @@
              x:DataType="vm:DashboardViewModel">
 
     <Grid Background="{DynamicResource WindowBackground}">
-        <StackPanel VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Spacing="16">
+        <Border Background="{DynamicResource SurfaceBackground}"
+                Width="420"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                CornerRadius="16"
+                BoxShadow="0 8 32 0 #1A000000"
+                Padding="40,44">
 
-            <PathIcon Data="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"
-                      Foreground="{DynamicResource AccentPurple}"
-                      Width="64" Height="64"
-                      HorizontalAlignment="Center" />
-
-            <TextBlock Text="{Binding WelcomeMessage}"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Foreground="{DynamicResource LabelPrimary}"
+            <StackPanel Spacing="20">
+                <Image Source="/Assets/logo.png"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"
+                       Width="72" Height="72"
                        HorizontalAlignment="Center" />
 
-            <TextBlock Text="Вы успешно вошли в Syncora"
-                       FontSize="16"
-                       Foreground="{DynamicResource LabelSecondary}"
-                       HorizontalAlignment="Center" />
-        </StackPanel>
+                <TextBlock Text="{Binding WelcomeMessage}"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource LabelPrimary}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center" />
+
+                <TextBlock Text="{Binding LoadingMessage}"
+                           FontSize="14"
+                           Foreground="{DynamicResource LabelSecondary}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center" />
+
+                <ProgressBar Value="{Binding LoadingProgress}"
+                             Minimum="0"
+                             Maximum="100"
+                             Height="6"
+                             CornerRadius="3"
+                             Foreground="{DynamicResource AccentPurple}"
+                             Background="{DynamicResource AccentPurpleLight}" />
+
+                <TextBlock Text="{Binding LoadingProgress, StringFormat={}{0:0}%}"
+                           FontSize="12"
+                           Foreground="{DynamicResource LabelMuted}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>
-

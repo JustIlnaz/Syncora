@@ -1,0 +1,229 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Syncora.Client.ViewModels.Pages"
+             x:Class="Syncora.Client.Views.Pages.ProfilePageView"
+             x:DataType="vm:ProfilePageViewModel">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+        <Grid Background="{DynamicResource WindowBackground}">
+            <Border Background="{DynamicResource SurfaceBackground}"
+                    CornerRadius="16"
+                    BoxShadow="0 2 12 0 #14000000"
+                    Padding="32"
+                    MaxWidth="640"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    Margin="{DynamicResource PagePadding}">
+
+                <StackPanel Spacing="24">
+                    <Grid ColumnDefinitions="Auto,*"
+                          ColumnSpacing="16">
+                        <Panel Width="88" Height="88">
+                            <Border Width="88" Height="88"
+                                    CornerRadius="44"
+                                    Background="{DynamicResource AccentPurpleLight}"
+                                    ClipToBounds="True"
+                                    IsVisible="{Binding !HasAvatar}">
+                                <TextBlock Text="{Binding UserInitials}"
+                                           FontSize="28"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentPurpleDark}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+
+                            <Border Width="88" Height="88"
+                                    CornerRadius="44"
+                                    ClipToBounds="True"
+                                    IsVisible="{Binding HasAvatar}">
+                                <Image Source="{Binding AvatarDisplayUrl}"
+                                       Stretch="UniformToFill"
+                                       Width="88"
+                                       Height="88" />
+                            </Border>
+                        </Panel>
+
+                        <StackPanel Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Spacing="8">
+                            <TextBlock Text="Профиль"
+                                       FontSize="24"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource LabelPrimary}" />
+                            <TextBlock Text="Измените данные, аватар или выйдите из аккаунта"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource LabelSecondary}"
+                                       TextWrapping="Wrap" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="ChangeAvatarButton"
+                                        Content="Изменить аватар"
+                                        Background="{DynamicResource SurfaceSecondary}"
+                                        Foreground="{DynamicResource LabelPrimary}"
+                                        CornerRadius="8"
+                                        Padding="12,8"
+                                        IsEnabled="{Binding !IsAvatarBusy}" />
+                                <Button Command="{Binding RemoveAvatarCommand}"
+                                        Content="Удалить"
+                                        Background="Transparent"
+                                        Foreground="#D32F2F"
+                                        BorderBrush="#F7B8C7"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="12,8"
+                                        IsEnabled="{Binding !IsAvatarBusy}"
+                                        IsVisible="{Binding HasAvatar}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="16">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Имя"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource LabelSecondary}" />
+                            <TextBox Text="{Binding Name}"
+                                     CornerRadius="10"
+                                     BorderBrush="{DynamicResource BorderSoft}"
+                                     Padding="12,10"
+                                     Watermark="Ваше имя"
+                                     IsEnabled="{Binding !IsLoading}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Электронная почта"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource LabelSecondary}" />
+                            <TextBox Text="{Binding Email}"
+                                     IsReadOnly="True"
+                                     CornerRadius="10"
+                                     BorderBrush="{DynamicResource BorderSoft}"
+                                     Padding="12,10"
+                                     Background="{DynamicResource SurfaceSecondary}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Часовой пояс"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource LabelSecondary}" />
+                            <TextBox Text="{Binding Timezone}"
+                                     CornerRadius="10"
+                                     BorderBrush="{DynamicResource BorderSoft}"
+                                     Padding="12,10"
+                                     Watermark="Europe/Moscow"
+                                     IsEnabled="{Binding !IsLoading}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#D32F2F"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                    <TextBlock Text="{Binding SuccessMessage}"
+                               Foreground="#2E7D32"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding SuccessMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                    <StackPanel Spacing="12">
+                        <Button Command="{Binding SaveCommand}"
+                                Background="{DynamicResource AccentPurple}"
+                                Foreground="White"
+                                CornerRadius="10"
+                                Padding="0,14"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                FontWeight="SemiBold"
+                                IsEnabled="{Binding !IsLoading}">
+                            <Panel>
+                                <TextBlock Text="Сохранить изменения"
+                                           IsVisible="{Binding !IsLoading}" />
+                                <TextBlock Text="Сохранение..."
+                                           IsVisible="{Binding IsLoading}" />
+                            </Panel>
+                        </Button>
+
+                        <Button Command="{Binding LogoutCommand}"
+                                Background="{DynamicResource SurfaceSecondary}"
+                                Foreground="{DynamicResource LabelPrimary}"
+                                BorderBrush="{DynamicResource BorderSoft}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="0,14"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                FontWeight="SemiBold"
+                                Content="Выйти из аккаунта" />
+
+                        <Border Background="{DynamicResource SurfaceSecondary}"
+                                CornerRadius="12"
+                                Padding="16"
+                                IsVisible="{Binding !ShowDeleteConfirmation}">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Удаление профиля"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource LabelPrimary}" />
+                                <TextBlock Text="Аккаунт и связанные данные будут удалены без возможности восстановления."
+                                           FontSize="13"
+                                           Foreground="{DynamicResource LabelSecondary}"
+                                           TextWrapping="Wrap"
+                                           LineHeight="20" />
+                                <Button Command="{Binding RequestDeleteCommand}"
+                                        Background="Transparent"
+                                        Foreground="#D32F2F"
+                                        BorderBrush="#F7B8C7"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="0,12"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Content="Удалить профиль" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#FDE8EE"
+                                CornerRadius="12"
+                                Padding="16"
+                                IsVisible="{Binding ShowDeleteConfirmation}">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Вы уверены?"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="#D32F2F" />
+                                <TextBlock Text="Это действие необратимо. Профиль будет удалён навсегда."
+                                           FontSize="13"
+                                           Foreground="{DynamicResource LabelSecondary}"
+                                           TextWrapping="Wrap" />
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <Button Grid.Column="0"
+                                            Command="{Binding CancelDeleteCommand}"
+                                            Background="{DynamicResource SurfaceBackground}"
+                                            Foreground="{DynamicResource LabelPrimary}"
+                                            BorderBrush="{DynamicResource BorderSoft}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="0,12"
+                                            Content="Отмена"
+                                            IsEnabled="{Binding !IsDeleting}" />
+                                    <Button Grid.Column="1"
+                                            Command="{Binding ConfirmDeleteCommand}"
+                                            Background="#D32F2F"
+                                            Foreground="White"
+                                            CornerRadius="10"
+                                            Padding="0,12"
+                                            Content="Удалить"
+                                            IsEnabled="{Binding !IsDeleting}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

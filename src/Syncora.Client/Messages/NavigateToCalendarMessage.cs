@@ -1,12 +1,12 @@
 namespace Syncora.Client.Messages;
 
-public sealed class NavigateToMainMessage
+public sealed class NavigateToCalendarMessage
 {
     public string UserName { get; }
     public string Email { get; }
     public string Token { get; }
 
-    public NavigateToMainMessage(string userName, string email, string token)
+    public NavigateToCalendarMessage(string userName, string email, string token)
     {
         UserName = userName;
         Email = email;

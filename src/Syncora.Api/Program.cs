@@ -11,6 +11,9 @@ using Syncora.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var webRootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+builder.WebHost.UseWebRoot(webRootPath);
+
 builder.Services.AddDbContext<SyncoraDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -75,7 +78,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Syncora API",
         Version = "v1",
-        Description = "API дл€ приложени€ Syncora Ч календарь, встречи, списки покупок"
+        Description = "API ??? ?????????? Syncora ? ?????????, ???????, ?????? ???????"
     });
 
     c.MapType<TimeSpan>(() => new OpenApiSchema
@@ -92,7 +95,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "¬ведите JWT токен (без слова 'Bearer')"
+        Description = "??????? JWT ????? (??? ????? 'Bearer')"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -121,6 +124,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+Directory.CreateDirectory(Path.Combine(app.Environment.WebRootPath!, "avatars"));
+
+app.UseStaticFiles();
+
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication(); 
@@ -140,7 +147,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "ќшибка при инициализации базы данных.");
+        logger.LogError(ex, "?????? ??? ????????????? ???? ??????.");
     }
 }
 

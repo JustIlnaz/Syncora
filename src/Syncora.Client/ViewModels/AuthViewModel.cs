@@ -12,6 +12,7 @@ namespace Syncora.Client.ViewModels
     public partial class AuthViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
+        private readonly AuthSessionStore _sessionStore;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HeaderTitle))]
@@ -51,9 +52,21 @@ namespace Syncora.Client.ViewModels
         [ObservableProperty]
         private bool rememberMe;
 
-        public AuthViewModel(AuthService authService)
+        public AuthViewModel(AuthService authService, AuthSessionStore sessionStore)
         {
             _authService = authService;
+            _sessionStore = sessionStore;
+            RestoreSavedSession();
+        }
+
+        private void RestoreSavedSession()
+        {
+            var session = _sessionStore.Load();
+            if (session == null)
+                return;
+
+            Email = session.Email;
+            RememberMe = session.RememberMe;
         }
 
         [RelayCommand]
@@ -104,14 +117,16 @@ namespace Syncora.Client.ViewModels
                 if (IsLoginMode)
                 {
                     response = await _authService.LoginAsync(Email, Password);
+                    PersistSession(response);
                 }
                 else
                 {
                     response = await _authService.RegisterAsync(Name, Email, Password);
+                    _sessionStore.Clear();
                 }
 
                 WeakReferenceMessenger.Default.Send(
-                    new NavigateToMainMessage(response.Name, response.Token));
+                    new NavigateToMainMessage(response.Name, response.Email, response.Token));
             }
             catch (ApiException ex)
             {
@@ -124,6 +139,24 @@ namespace Syncora.Client.ViewModels
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        private void PersistSession(LoginResponse response)
+        {
+            if (RememberMe)
+            {
+                _sessionStore.Save(new SavedSession
+                {
+                    RememberMe = true,
+                    Email = response.Email,
+                    UserName = response.Name,
+                    Token = response.Token
+                });
+            }
+            else
+            {
+                _sessionStore.Clear();
             }
         }
     }

@@ -9,6 +9,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Syncora.Client/Styles/Colors.axaml"/>
+                <ResourceInclude Source="avares://Syncora.Client/Styles/Sizes.axaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

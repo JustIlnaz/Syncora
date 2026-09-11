@@ -1,7 +1,8 @@
-using System;
-using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
 using Syncora.Client.ViewModels;
+using System;
+using System.ComponentModel;
 
 namespace Syncora.Client.Views;
 
@@ -11,6 +12,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        Opened += (_, _) => CenterOnScreen();
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -34,19 +36,49 @@ public partial class MainWindow : Window
 
     private void ApplyWindowSize(object? currentView)
     {
-        if (currentView is AuthViewModel)
+        switch (currentView)
         {
-            Width = 520;
-            Height = 900;
-            MinWidth = 480;
-            MinHeight = 860;
+            case AuthViewModel:
+                Width = 520;
+                Height = 900;
+                MinWidth = 480;
+                MinHeight = 860;
+                break;
+
+            case DashboardViewModel:
+                Width = 520;
+                Height = 420;
+                MinWidth = 420;
+                MinHeight = 380;
+                break;
+
+            case AppShellViewModel:
+                Width = 1280;
+                Height = 820;
+                MinWidth = 720;
+                MinHeight = 600;
+                break;
+
+            default:
+                Width = 1000;
+                Height = 650;
+                MinWidth = 800;
+                MinHeight = 600;
+                break;
         }
-        else
-        {
-            Width = 1000;
-            Height = 650;
-            MinWidth = 800;
-            MinHeight = 600;
-        }
+
+        CenterOnScreen();
+    }
+
+    private void CenterOnScreen()
+    {
+        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+        if (screen == null)
+            return;
+
+        var area = screen.WorkingArea;
+        var x = area.X + Math.Max(0, (area.Width - (int)Width) / 2);
+        var y = area.Y + Math.Max(0, (area.Height - (int)Height) / 2);
+        Position = new PixelPoint(x, y);
     }
 }

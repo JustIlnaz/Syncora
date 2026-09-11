@@ -1,0 +1,218 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Syncora.Client.ViewModels"
+             xmlns:nav="using:Syncora.Client.ViewModels.Navigation"
+             x:Class="Syncora.Client.Views.AppShellView"
+             x:Name="RootShell"
+             x:DataType="vm:AppShellViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button.navItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.navItem:pointerover">
+            <Setter Property="Background" Value="#08000000" />
+        </Style>
+        <Style Selector="Button.navItem.active">
+            <Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+        </Style>
+        <Style Selector="Button.navItem.active PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource AccentPurpleDark}" />
+        </Style>
+        <Style Selector="Button.navItem.active TextBlock.navTitle">
+            <Setter Property="Foreground" Value="{DynamicResource AccentPurpleDark}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.profileCard">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.profileCard:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+        </Style>
+        <Style Selector="Button.profileCard.active">
+            <Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPurpleLight}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="Auto,*"
+          Background="{DynamicResource WindowBackground}">
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0"
+                Width="{Binding SidebarWidth}"
+                MinWidth="{Binding SidebarMinWidth}"
+                MaxWidth="{Binding SidebarMaxWidth}"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource BorderSoft}"
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,*,Auto"
+                  Margin="12,20,12,16">
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Spacing="20" Margin="0,0,0,12">
+                    <TextBlock Text="Syncora"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource AccentPurple}"
+                               Margin="4,0,0,0"
+                               IsVisible="{Binding IsSidebarExpanded}" />
+
+                    <Border Width="40" Height="40"
+                            CornerRadius="10"
+                            Background="{DynamicResource AccentPurpleLight}"
+                            HorizontalAlignment="Center"
+                            IsVisible="{Binding IsSidebarCompact}">
+                        <TextBlock Text="S"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentPurpleDark}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Navigation -->
+                <ScrollViewer Grid.Row="1"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding NavigationItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="nav:NavItemViewModel">
+                                <Button Classes="navItem"
+                                        Classes.active="{Binding IsActive}"
+                                        Command="{Binding #RootShell.((vm:AppShellViewModel)DataContext).SelectNavCommand}"
+                                        CommandParameter="{Binding Section}"
+                                        ToolTip.Tip="{Binding Title}">
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="10"
+                                                HorizontalAlignment="Stretch">
+                                        <PathIcon Data="{Binding IconData}"
+                                                  Width="18" Height="18"
+                                                  Foreground="{DynamicResource LabelPrimary}" />
+                                        <TextBlock Classes="navTitle"
+                                                   Text="{Binding Title}"
+                                                   FontSize="14"
+                                                   Foreground="{DynamicResource LabelPrimary}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="{Binding #RootShell.((vm:AppShellViewModel)DataContext).IsSidebarExpanded}" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Profile: expanded -->
+                <Button Grid.Row="2"
+                        Classes="profileCard"
+                        Classes.active="{Binding IsProfilePageOpen}"
+                        Command="{Binding OpenProfileCommand}"
+                        Padding="{DynamicResource ProfileCardPadding}"
+                        Margin="0,12,0,0"
+                        ToolTip.Tip="Открыть профиль"
+                        IsVisible="{Binding IsSidebarExpanded}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Panel Width="{DynamicResource ProfileAvatarSize}"
+                               Height="{DynamicResource ProfileAvatarSize}">
+                            <Border Width="{DynamicResource ProfileAvatarSize}"
+                                    Height="{DynamicResource ProfileAvatarSize}"
+                                    CornerRadius="20"
+                                    Background="{DynamicResource AccentPurpleLight}"
+                                    ClipToBounds="True"
+                                    IsVisible="{Binding !HasAvatar}">
+                                <TextBlock Text="{Binding UserInitials}"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentPurpleDark}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <Border Width="{DynamicResource ProfileAvatarSize}"
+                                    Height="{DynamicResource ProfileAvatarSize}"
+                                    CornerRadius="20"
+                                    ClipToBounds="True"
+                                    IsVisible="{Binding HasAvatar}">
+                                <Image Source="{Binding AvatarDisplayUrl}"
+                                       Stretch="UniformToFill" />
+                            </Border>
+                        </Panel>
+
+                        <StackPanel Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Spacing="2">
+                            <TextBlock Text="{Binding UserName}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource LabelPrimary}"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxLines="1" />
+                            <TextBlock Text="{Binding UserEmail}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource LabelMuted}"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxLines="1" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+
+                <!-- Profile: compact -->
+                <Button Grid.Row="2"
+                        Classes="profileCard"
+                        Classes.active="{Binding IsProfilePageOpen}"
+                        Command="{Binding OpenProfileCommand}"
+                        Padding="{DynamicResource ProfileCardCompactPadding}"
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Center"
+                        ToolTip.Tip="{Binding UserName}"
+                        IsVisible="{Binding IsSidebarCompact}">
+                    <Panel Width="{DynamicResource ProfileAvatarCompactSize}"
+                           Height="{DynamicResource ProfileAvatarCompactSize}">
+                        <Border Width="{DynamicResource ProfileAvatarCompactSize}"
+                                Height="{DynamicResource ProfileAvatarCompactSize}"
+                                CornerRadius="18"
+                                Background="{DynamicResource AccentPurpleLight}"
+                                ClipToBounds="True"
+                                IsVisible="{Binding !HasAvatar}">
+                            <TextBlock Text="{Binding UserInitials}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AccentPurpleDark}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                        <Border Width="{DynamicResource ProfileAvatarCompactSize}"
+                                Height="{DynamicResource ProfileAvatarCompactSize}"
+                                CornerRadius="18"
+                                ClipToBounds="True"
+                                IsVisible="{Binding HasAvatar}">
+                            <Image Source="{Binding AvatarDisplayUrl}"
+                                   Stretch="UniformToFill" />
+                        </Border>
+                    </Panel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ContentControl Grid.Column="1"
+                        Content="{Binding CurrentPage}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Margin="{DynamicResource PagePadding}" />
+    </Grid>
+</UserControl>
