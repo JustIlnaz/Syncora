@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Syncora.Client.ViewModels;
 using System;
 using System.ComponentModel;
@@ -13,6 +14,21 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
         Opened += (_, _) => CenterOnScreen();
+        PointerPressed += OnPointerPressed;
+    }
+
+    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            return;
+
+        if (WindowState is WindowState.Maximized or WindowState.FullScreen)
+            return;
+
+        if (e.Source is Button or TextBox or CheckBox or ComboBox or Slider or ToggleSwitch)
+            return;
+
+        BeginMoveDrag(e);
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -76,9 +92,12 @@ public partial class MainWindow : Window
         if (screen == null)
             return;
 
+        var scaling = screen.Scaling;
         var area = screen.WorkingArea;
-        var x = area.X + Math.Max(0, (area.Width - (int)Width) / 2);
-        var y = area.Y + Math.Max(0, (area.Height - (int)Height) / 2);
+        var width = (int)(Width * scaling);
+        var height = (int)(Height * scaling);
+        var x = area.X + Math.Max(0, (area.Width - width) / 2);
+        var y = area.Y + Math.Max(0, (area.Height - height) / 2);
         Position = new PixelPoint(x, y);
     }
 }
