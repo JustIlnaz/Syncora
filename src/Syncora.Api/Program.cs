@@ -25,6 +25,9 @@ builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<MeetingService>();
 builder.Services.AddScoped<MeetingSearchService>();
+builder.Services.AddScoped<ShoppingListService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<SettingsService>();
 
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -78,7 +81,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Syncora API",
         Version = "v1",
-        Description = "API ??? ?????????? Syncora ? ?????????, ???????, ?????? ???????"
+        Description = "Syncora API — calendars, meetings, shopping lists"
     });
 
     c.MapType<TimeSpan>(() => new OpenApiSchema
@@ -95,7 +98,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "??????? JWT ????? (??? ????? 'Bearer')"
+        Description = "Enter JWT token (without 'Bearer')"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
