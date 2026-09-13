@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Text.Json;
 
 namespace Syncora.Middleware
@@ -11,18 +11,11 @@ namespace Syncora.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
-        private readonly IHostEnvironment _environment;
 
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
-        public ExceptionMiddleware(
-            RequestDelegate next,
-            ILogger<ExceptionMiddleware> logger,
-            IHostEnvironment environment)
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
             _logger = logger;
-            _environment = environment;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -31,49 +24,52 @@ namespace Syncora.Middleware
             {
                 await _next(context);
             }
-            catch (UnauthorizedAccessException)
-            {
-                await WriteError(context, StatusCodes.Status401Unauthorized,
-                    "UNAUTHORIZED", "Требуется авторизация.");
-            }
-            catch (BadHttpRequestException ex)
-            {
-                await WriteError(context, StatusCodes.Status400BadRequest,
-                    "BAD_REQUEST", ex.Message);
-            }
-            catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
-            {
-                // Клиент отключился — ничего не отвечаем
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception on {Method} {Path}",
-                    context.Request.Method, context.Request.Path);
-
-                var message = _environment.IsDevelopment()
-                    ? ex.Message
-                    : "Внутренняя ошибка сервера. Попробуйте позже.";
-
-                await WriteError(context, StatusCodes.Status500InternalServerError,
-                    "INTERNAL_ERROR", message);
+                _logger.LogError(ex, "Необработанное исключение: {Message}", ex.Message);
+                await HandleExceptionAsync(context, ex);
             }
         }
 
-        private static async Task WriteError(HttpContext context, int statusCode, string code, string message)
+        private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            if (context.Response.HasStarted)
-                return;
-
-            context.Response.Clear();
-            context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
 
-            var body = JsonSerializer.Serialize(new
+            var statusCode = exception switch
             {
-                error = new { code, message }
-            }, JsonOptions);
+                UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+                InvalidOperationException => HttpStatusCode.Conflict,
+                ArgumentException => HttpStatusCode.BadRequest,
+                KeyNotFoundException => HttpStatusCode.NotFound,
+                _ => HttpStatusCode.InternalServerError
+            };
 
-            await context.Response.WriteAsync(body);
+            context.Response.StatusCode = (int)statusCode;
+
+            var response = new
+            {
+                status = (int)statusCode,
+                title = GetTitle(statusCode),
+                message = exception.Message,
+                timestamp = DateTime.UtcNow
+            };
+
+            var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            await context.Response.WriteAsync(json);
         }
+
+        private static string GetTitle(HttpStatusCode code) => code switch
+        {
+            HttpStatusCode.BadRequest => "Bad Request",
+            HttpStatusCode.Unauthorized => "Unauthorized",
+            HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.Conflict => "Conflict",
+            HttpStatusCode.InternalServerError => "Internal Server Error",
+            _ => "Error"
+        };
     }
 }

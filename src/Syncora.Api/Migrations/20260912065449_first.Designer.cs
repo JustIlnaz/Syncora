@@ -12,8 +12,8 @@ using Syncora.Data;
 namespace Syncora.Migrations
 {
     [DbContext(typeof(SyncoraDbContext))]
-    [Migration("20260910084454_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260912065449_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

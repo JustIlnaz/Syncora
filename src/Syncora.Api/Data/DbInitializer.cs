@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Syncora.Helpers;
 using Syncora.Models;
 
 namespace Syncora.Data
@@ -17,7 +18,7 @@ namespace Syncora.Data
                 Id = Guid.NewGuid(),
                 Name = "Анна Петрова",
                 Email = "anna@syncora.com",
-                PasswordHash = "123456",
+                PasswordHash = PasswordHelper.HashPassword("123456"),
                 Timezone = "Europe/Moscow",
                 AvatarUrl = null,
                 CreatedAt = DateTime.UtcNow,
@@ -29,7 +30,7 @@ namespace Syncora.Data
                 Id = Guid.NewGuid(),
                 Name = "Иван Соколов",
                 Email = "ivan@syncora.com",
-                PasswordHash = "123456",
+                PasswordHash = PasswordHelper.HashPassword("123456"),
                 Timezone = "Europe/Moscow",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow

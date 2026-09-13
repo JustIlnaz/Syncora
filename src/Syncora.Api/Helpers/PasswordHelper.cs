@@ -1,53 +1,39 @@
-using System.Security.Cryptography;
+using System;
 
 namespace Syncora.Helpers
 {
     /// <summary>
-    /// Хэширование паролей PBKDF2 (100 000 итераций, SHA-256, 128-битная соль).
-    /// Формат хранения: {iterations}.{saltBase64}.{hashBase64}.
+    /// Хэширование паролей BCrypt.
     /// </summary>
     public static class PasswordHelper
     {
-        private const int SaltSize = 16;
-        private const int HashSize = 32;
-        private const int Iterations = 100_000;
-
-        public static string Hash(string password)
+        public static string HashPassword(string password)
         {
-            var salt = RandomNumberGenerator.GetBytes(SaltSize);
-            var hash = Rfc2898DeriveBytes.Pbkdf2(
-                password, salt, Iterations, HashAlgorithmName.SHA256, HashSize);
+            if (string.IsNullOrWhiteSpace(password))
+                throw new ArgumentException("Пароль не может быть пустым", nameof(password));
 
-            return $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(hash)}";
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        public static bool Verify(string password, string stored)
+        public static bool VerifyPassword(string password, string hashedPassword)
         {
-            if (string.IsNullOrEmpty(stored))
+            if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(hashedPassword))
                 return false;
 
-            var parts = stored.Split('.', 3);
-            if (parts.Length != 3)
-                return false;
-
-            if (!int.TryParse(parts[0], out var iterations) || iterations <= 0)
-                return false;
-
-            byte[] salt, expected;
             try
             {
-                salt = Convert.FromBase64String(parts[1]);
-                expected = Convert.FromBase64String(parts[2]);
+                return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
             }
-            catch (FormatException)
+            catch
             {
                 return false;
             }
+        }
 
-            var actual = Rfc2898DeriveBytes.Pbkdf2(
-                password, salt, iterations, HashAlgorithmName.SHA256, expected.Length);
-
-            return CryptographicOperations.FixedTimeEquals(actual, expected);
+        public static bool IsHashed(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return false;
+            return value.StartsWith("$2a$") || value.StartsWith("$2b$") || value.StartsWith("$2y$");
         }
     }
 }

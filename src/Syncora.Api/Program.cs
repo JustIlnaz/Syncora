@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Syncora.Data;
 using Syncora.Helpers;
+using Syncora.Middleware;
 using Syncora.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -131,6 +132,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
+
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -150,8 +154,6 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication(); 
 app.UseAuthorization();
 
-app.UseMiddleware<Syncora.Middleware.ExceptionMiddleware>();
-
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
@@ -166,7 +168,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "?????? ??? ????????????? ???? ??????.");
+        logger.LogError(ex, "Error while initializing database.");
     }
 }
 

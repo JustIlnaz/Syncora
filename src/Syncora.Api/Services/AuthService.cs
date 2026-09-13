@@ -31,7 +31,7 @@ namespace Syncora.Services
                 Id = Guid.NewGuid(),
                 Name = request.Name,
                 Email = email,
-                PasswordHash = PasswordHelper.Hash(request.Password),
+PasswordHash = PasswordHelper.HashPassword(request.Password),
                 Timezone = string.IsNullOrWhiteSpace(request.Timezone) ? "UTC" : request.Timezone,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -87,12 +87,16 @@ namespace Syncora.Services
             return BuildResponse(user);
         }
 
+
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
             var email = request.Email.ToLower().Trim();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null || !PasswordHelper.Verify(request.Password, user.PasswordHash))
+if (user == null)
+                throw new UnauthorizedAccessException("Неверный email или пароль");
+
+            if (!PasswordHelper.VerifyPassword(request.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Неверный email или пароль");
 
             return BuildResponse(user);
@@ -118,5 +122,6 @@ namespace Syncora.Services
                 ExpiresAt = expiresAt
             };
         }
+
     }
 }
