@@ -55,10 +55,10 @@ public partial class MainWindow : Window
         switch (currentView)
         {
             case AuthViewModel:
-                Width = 520;
-                Height = 900;
-                MinWidth = 480;
-                MinHeight = 860;
+                Width = 560;
+                Height = 940;
+                MinWidth = 520;
+                MinHeight = 880;
                 break;
 
             case DashboardViewModel:

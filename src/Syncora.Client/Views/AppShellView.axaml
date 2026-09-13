@@ -30,21 +30,12 @@
             <Setter Property="Foreground" Value="{DynamicResource AccentPurpleDark}" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
-        <Style Selector="Button.profileCard">
+        <Style Selector="Border.profileCard">
             <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        </Style>
-        <Style Selector="Button.profileCard:pointerover">
-            <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
-        </Style>
-        <Style Selector="Button.profileCard.active">
-            <Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentPurpleLight}" />
         </Style>
     </UserControl.Styles>
 
@@ -117,13 +108,11 @@
                 </ScrollViewer>
 
                 <!-- Profile: expanded -->
-                <Button Grid.Row="2"
+                <Border Grid.Row="2"
                         Classes="profileCard"
-                        Classes.active="{Binding IsProfilePageOpen}"
-                        Command="{Binding OpenProfileCommand}"
                         Padding="{DynamicResource ProfileCardPadding}"
                         Margin="0,12,0,0"
-                        ToolTip.Tip="Открыть профиль"
+                        ToolTip.Tip="Профиль редактируется в настройках"
                         IsVisible="{Binding IsSidebarExpanded}">
                     <Grid ColumnDefinitions="Auto,*">
                         <Panel Width="{DynamicResource ProfileAvatarSize}"
@@ -146,7 +135,7 @@
                                     CornerRadius="20"
                                     ClipToBounds="True"
                                     IsVisible="{Binding HasAvatar}">
-                                <Image Source="{Binding AvatarDisplayUrl}"
+                                <Image Source="{Binding AvatarImage}"
                                        Stretch="UniformToFill" />
                             </Border>
                         </Panel>
@@ -168,13 +157,11 @@
                                        MaxLines="1" />
                         </StackPanel>
                     </Grid>
-                </Button>
+                </Border>
 
                 <!-- Profile: compact -->
-                <Button Grid.Row="2"
+                <Border Grid.Row="2"
                         Classes="profileCard"
-                        Classes.active="{Binding IsProfilePageOpen}"
-                        Command="{Binding OpenProfileCommand}"
                         Padding="{DynamicResource ProfileCardCompactPadding}"
                         Margin="0,12,0,0"
                         HorizontalAlignment="Center"
@@ -200,11 +187,11 @@
                                 CornerRadius="18"
                                 ClipToBounds="True"
                                 IsVisible="{Binding HasAvatar}">
-                            <Image Source="{Binding AvatarDisplayUrl}"
+                            <Image Source="{Binding AvatarImage}"
                                    Stretch="UniformToFill" />
                         </Border>
                     </Panel>
-                </Button>
+                </Border>
             </Grid>
         </Border>
 

@@ -1,3 +1,4 @@
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -31,6 +32,9 @@ public partial class AppShellViewModel : ViewModelBase,
 
     [ObservableProperty]
     private int avatarVersion;
+
+    [ObservableProperty]
+    private Bitmap? avatarImage;
 
     public string UserInitials => GetInitials(UserName);
     public bool HasAvatar => !string.IsNullOrWhiteSpace(AvatarUrl);
@@ -108,11 +112,17 @@ public partial class AppShellViewModel : ViewModelBase,
             UserEmail = profile.Email;
             AvatarUrl = profile.AvatarUrl;
             AvatarVersion++;
+            await RefreshAvatarImageAsync();
         }
         catch
         {
             // Sidebar can still work with session data.
         }
+    }
+
+    private async Task RefreshAvatarImageAsync()
+    {
+        AvatarImage = await AvatarImageLoader.LoadAsync(AvatarUrl, AvatarVersion);
     }
 
     [RelayCommand]
@@ -152,6 +162,8 @@ public partial class AppShellViewModel : ViewModelBase,
         UserEmail = message.Email;
         AvatarUrl = message.AvatarUrl;
         AvatarVersion++;
+        AvatarImageLoader.Invalidate(message.AvatarUrl);
+        _ = RefreshAvatarImageAsync();
     }
 
     partial void OnIsSidebarCompactChanged(bool value)
@@ -167,25 +179,32 @@ public partial class AppShellViewModel : ViewModelBase,
         IsSidebarCompact = width < 960;
     }
 
-    private static PlaceholderPageViewModel CreatePage(AppSection section) => section switch
+    private ViewModelBase CreatePage(AppSection section) => section switch
     {
-        AppSection.Calendar => new PlaceholderPageViewModel(
-            "Календарь",
-            "Здесь будет ваше расписание, события и недельный вид."),
-        AppSection.Meetings => new PlaceholderPageViewModel(
-            "Встречи",
-            "Здесь будут ваши встречи и созвоны."),
-        AppSection.ShoppingLists => new PlaceholderPageViewModel(
-            "Списки покупок",
-            "Здесь будут общие и личные списки покупок."),
-        AppSection.People => new PlaceholderPageViewModel(
-            "Люди",
-            "Здесь будет список контактов и участников."),
-        AppSection.Settings => new PlaceholderPageViewModel(
-            "Настройки",
-            "Здесь будут настройки профиля и приложения."),
+        AppSection.Calendar => new CalendarPageViewModel(
+            new CalendarService(_apiClient),
+            new EventService(_apiClient)),
+        AppSection.Meetings => new MeetingsPageViewModel(
+            new MeetingService(_apiClient),
+            _profileService),
+        AppSection.ShoppingLists => new ShoppingListsPageViewModel(
+            new ShoppingService(_apiClient)),
+        AppSection.People => new PeoplePageViewModel(
+            _profileService,
+            new CalendarService(_apiClient)),
+        AppSection.Settings => new SettingsPageViewModel(
+            _profileService,
+            _sessionStore,
+            _apiClient),
         _ => new PlaceholderPageViewModel("Syncora", "Раздел в разработке.")
     };
+
+    // Альтернатива через DI (если зарегистрированы):
+    // private ViewModelBase CreatePage(IServiceProvider sp, AppSection section) => section switch
+    // {
+    //     AppSection.Calendar => sp.GetRequiredService<CalendarPageViewModel>(),
+    //     ...
+    // };
 
     private static string GetInitials(string name)
     {

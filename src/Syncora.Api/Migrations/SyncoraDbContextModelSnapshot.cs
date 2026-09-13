@@ -77,6 +77,10 @@ namespace Syncora.Migrations
                     b.Property<Guid>("CalendarId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 

@@ -1,0 +1,14 @@
+[2026-09-13 19:48:54.653] [00005DF0] === Logging started ===
+[2026-09-13 19:48:54.667] [00005DF0] Executing: "C:\Program Files\dotnet\dotnet.exe" build src\Syncora.Client\Syncora.Client.csproj --no-restore, PID: 24048, PPID: 31584
+[2026-09-13 19:48:54.668] [00005DF0] IsElevated: False
+[2026-09-13 19:48:54.668] [00005DF0] Is64BitProcess: True
+[2026-09-13 19:48:54.668] [00005DF0] RebootPending: False
+[2026-09-13 19:48:54.668] [00005DF0] ProcessorArchitecture: amd64
+[2026-09-13 19:48:54.668] [00005DF0] HostArchitecture: x64
+[2026-09-13 19:48:54.668] [00005DF0] SdkDirectory: 10.0.401
+[2026-09-13 19:48:54.668] [00005DF0] VerifySignatures: False
+[2026-09-13 19:48:54.668] [00005DF0] SDK feature band: 10.0.400
+[2026-09-13 19:49:11.719] [00005DF0] Shutting down
+[2026-09-13 19:49:11.719] [00005DF0] Shutdown completed.
+[2026-09-13 19:49:11.719] [00005DF0] Restart required: False
+[2026-09-13 19:49:11.719] [00005DF0] === Logging ended ===

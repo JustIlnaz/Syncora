@@ -20,5 +20,37 @@
   
     <Application.Styles>
         <FluentTheme />
+        <Style Selector="CalendarDatePicker">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="CalendarDatePicker:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+        </Style>
+        <Style Selector="Calendar">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+        </Style>
+        <Style Selector="CalendarDayButton:selected">
+            <Setter Property="Background" Value="{DynamicResource AccentPurple}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="TimePicker">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="TimePicker:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+        </Style>
     </Application.Styles>
 </Application>

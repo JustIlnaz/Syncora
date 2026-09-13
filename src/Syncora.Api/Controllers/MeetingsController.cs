@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Syncora.DTO.Meeting;
-using Syncora.Models;
+using Syncora.Helpers;
 using Syncora.Services;
+using System;
 
 namespace Syncora.Controllers
 {
@@ -36,8 +37,26 @@ namespace Syncora.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _meetingService.GetByIdAsync(id, CurrentUserId);
-            if (result == null) return NotFound(new { message = "Встреча не найдена" });
+            if (result == null) return NotFound(ApiError.Body("MEETING_NOT_FOUND", "Встреча не найдена"));
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Поиск общего свободного времени (ТЗ §18.2): POST /api/meetings/search.
+        /// </summary>
+        [HttpPost("search")]
+        public async Task<IActionResult> Search([FromBody] MeetingSearchRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                var result = await _searchService.SearchAsync(CurrentUserId, request);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ApiError.Body("MEETING_SEARCH_FAILED", ex.Message));
+            }
         }
 
         [HttpPost]
@@ -49,24 +68,13 @@ namespace Syncora.Controllers
                 var result = await _meetingService.CreateAsync(request, CurrentUserId);
                 return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
             }
-            catch (InvalidOperationException ex)
+            catch (MeetingSlotConflictException ex)
             {
-                return Conflict(new { message = ex.Message });
-            }
-        }
-
-        [HttpPost("find-slots")]
-        public async Task<IActionResult> FindSlots([FromBody] FindMeetingTimeRequest request)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            try
-            {
-                var result = await _searchService.FindAvailableSlotsAsync(CurrentUserId, request);
-                return Ok(result);
+                return Conflict(ApiError.Body("MEETING_SLOT_CONFLICT", ex.Message));
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { message = ex.Message });
+                return Conflict(ApiError.Body("MEETING_CREATE_FAILED", ex.Message));
             }
         }
 
@@ -76,30 +84,28 @@ namespace Syncora.Controllers
             try
             {
                 var ok = await _meetingService.RespondAsync(id, CurrentUserId, status);
-                if (!ok) return NotFound(new { message = "Встреча не найдена или вы не участник" });
+                if (!ok) return NotFound(ApiError.Body("MEETING_NOT_FOUND", "Встреча не найдена или вы не участник"));
                 return NoContent();
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ApiError.Body("MEETING_RESPOND_FAILED", ex.Message));
             }
         }
 
-        [HttpPut("{id}/confirm-slot")]
-        public async Task<IActionResult> ConfirmSlot(
-            Guid id,
-            [FromQuery] DateTime slotStart,
-            [FromQuery] DateTime slotEnd)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateMeetingRequest request)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
-                var result = await _meetingService.ConfirmSlotAsync(id, CurrentUserId, slotStart, slotEnd);
-                if (result == null) return NotFound(new { message = "Встреча не найдена или нет прав" });
+                var result = await _meetingService.UpdateAsync(id, CurrentUserId, request.Title, request.Start, request.End);
+                if (result == null) return NotFound(ApiError.Body("MEETING_NOT_FOUND", "Встреча не найдена или нет прав"));
                 return Ok(result);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ApiError.Body("MEETING_UPDATE_FAILED", ex.Message));
             }
         }
 
@@ -107,7 +113,7 @@ namespace Syncora.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var ok = await _meetingService.DeleteAsync(id, CurrentUserId);
-            if (!ok) return NotFound(new { message = "Встреча не найдена или нет прав" });
+            if (!ok) return NotFound(ApiError.Body("MEETING_NOT_FOUND", "Встреча не найдена или нет прав"));
             return NoContent();
         }
     }

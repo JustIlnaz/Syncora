@@ -1,0 +1,473 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Syncora.Client.ViewModels.Pages"
+			 xmlns:pages="using:Syncora.Client.Views.Pages"
+			 xmlns:conv="using:Syncora.Client.Converters"
+			 xmlns:cal="using:Syncora.Client.Models.Calendar"
+			 xmlns:sys="using:System"
+			 x:Class="Syncora.Client.Views.Pages.CalendarPageView"
+			 x:Name="Root"
+			 x:DataType="vm:CalendarPageViewModel">
+
+	<UserControl.Styles>
+		<!-- Заголовок страницы -->
+		<Style Selector="TextBlock.pageTitle">
+			<Setter Property="FontSize" Value="22" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<!-- Кнопки навигации недели -->
+		<Style Selector="Button.weekNav">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,6" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+		<Style Selector="Button.weekNav:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+		</Style>
+
+		<!-- Кнопка "Сегодня" -->
+		<Style Selector="Button.todayBtn">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="12,6" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentPurpleDark}" />
+			<Setter Property="FontWeight" Value="Medium" />
+		</Style>
+		<Style Selector="Button.todayBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleLight}" />
+		</Style>
+
+		<!-- Primary кнопка "Создать событие" -->
+		<Style Selector="Button.primaryBtn">
+			<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
+			<Setter Property="Foreground" Value="#FFFFFF" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="14,8" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Button.primaryBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
+		</Style>
+
+		<!-- Заголовки дней недели -->
+		<Style Selector="TextBlock.dayName">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelSecondary}" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TextBlock.dayNumber">
+			<Setter Property="FontSize" Value="18" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TextBlock.dayNumber.today">
+			<Setter Property="Foreground" Value="{DynamicResource AccentPurple}" />
+		</Style>
+
+		<!-- Часовые метки слева -->
+		<Style Selector="TextBlock.hourLabel">
+			<Setter Property="FontSize" Value="11" />
+			<Setter Property="FontWeight" Value="Medium" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelMuted}" />
+			<Setter Property="HorizontalAlignment" Value="Right" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+
+		<Style Selector="Border.timeRail">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="BorderThickness" Value="0,0,1,0" />
+		</Style>
+
+		<Style Selector="Border.timeTick">
+			<Setter Property="Height" Value="64" />
+			<Setter Property="Padding" Value="0,0,12,0" />
+		</Style>
+
+		<!-- Ошибки/успех -->
+		<Style Selector="TextBlock.errorText">
+			<Setter Property="Foreground" Value="#D32F2F" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+		<Style Selector="TextBlock.successText">
+			<Setter Property="Foreground" Value="#2E7D32" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+
+		<!-- Редактор события -->
+		<Style Selector="TextBox.editorInput">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,8" />
+		</Style>
+		<Style Selector="ComboBox.editorInput">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,6" />
+		</Style>
+
+		<Style Selector="Button.colorSwatch">
+			<Setter Property="Width" Value="30" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="15" />
+			<Setter Property="Cursor" Value="Hand" />
+		</Style>
+
+		<Style Selector="Button.colorSwatch:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+		</Style>
+	</UserControl.Styles>
+
+	<Grid Background="{DynamicResource WindowBackground}"
+		  RowDefinitions="Auto,Auto,*">
+
+		<!-- ═══════ Заголовок ═══════ -->
+		<Grid Grid.Row="0"
+			  ColumnDefinitions="Auto,*,Auto"
+			  Margin="0,0,0,16">
+
+			<StackPanel Grid.Column="0" Spacing="2">
+				<TextBlock Classes="pageTitle" Text="Календарь" />
+				<TextBlock Text="{Binding WeekRangeText}"
+						   FontSize="13"
+						   Foreground="{DynamicResource LabelSecondary}" />
+			</StackPanel>
+
+			<StackPanel Grid.Column="2"
+						Orientation="Horizontal"
+						Spacing="8"
+						VerticalAlignment="Center">
+				<Button Classes="weekNav" Command="{Binding PreviousWeekCommand}">
+					<TextBlock Text="‹" FontSize="16" />
+				</Button>
+				<Button Classes="todayBtn" Command="{Binding TodayCommand}">
+					Сегодня
+				</Button>
+				<Button Classes="weekNav" Command="{Binding NextWeekCommand}">
+					<TextBlock Text="›" FontSize="16" />
+				</Button>
+				<Button Classes="primaryBtn" Command="{Binding OpenCreateEditorCommand}" Margin="8,0,0,0">
+					+ Событие
+				</Button>
+			</StackPanel>
+		</Grid>
+
+		<!-- ═══════ Сообщения ═══════ -->
+		<StackPanel Grid.Row="1" Margin="0,0,0,8">
+			<TextBlock Classes="errorText"
+					   Text="{Binding ErrorMessage}"
+					   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+			<TextBlock Classes="successText"
+					   Text="{Binding SuccessMessage}"
+					   IsVisible="{Binding SuccessMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+
+		<!-- ═══════ Основная область ═══════ -->
+		<Grid Grid.Row="2"
+			  ColumnDefinitions="*,Auto"
+			  ColumnSpacing="16">
+
+			<!-- Недельный календарь -->
+			<Border Grid.Column="0"
+					Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					BoxShadow="0 2 12 0 #14000000"
+					Padding="0"
+					ClipToBounds="True">
+
+				<Grid RowDefinitions="Auto,*">
+
+					<!-- Заголовок месяца + дни недели -->
+					<Grid Grid.Row="0"
+						  ColumnDefinitions="72,*"
+						  RowDefinitions="Auto,Auto"
+						  Margin="0,16,0,0">
+
+						<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+								   Text="{Binding MonthTitle}"
+								   FontSize="16"
+								   FontWeight="SemiBold"
+								   Foreground="{DynamicResource LabelPrimary}"
+								   Margin="16,0,16,12" />
+
+						<!-- Пустой угол -->
+						<Border Grid.Row="1" Grid.Column="0"
+								Classes="timeRail"
+								BorderBrush="{DynamicResource BorderSoft}"
+								BorderThickness="0,0,1,1" />
+
+						<!-- Дни недели -->
+						<ItemsControl Grid.Row="1" Grid.Column="1"
+									  ItemsSource="{Binding Days}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<UniformGrid Columns="7" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="vm:WeekDayColumnViewModel">
+									<Border BorderBrush="{DynamicResource BorderSoft}"
+											BorderThickness="0,0,1,1"
+											Padding="4,8">
+										<StackPanel Spacing="2">
+											<TextBlock Classes="dayName" Text="{Binding DayName}" />
+											<TextBlock Classes="dayNumber"
+													   Classes.today="{Binding IsToday}"
+													   Text="{Binding DayNumber}" />
+										</StackPanel>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</Grid>
+
+					<!-- Тело календаря -->
+					<ScrollViewer Grid.Row="1"
+								  x:Name="CalendarScroll"
+								  VerticalScrollBarVisibility="Auto"
+								  HorizontalScrollBarVisibility="Disabled">
+						<Grid ColumnDefinitions="72,*"
+							  Width="{Binding #CalendarScroll.Bounds.Width}">
+
+							<!-- Часовые метки -->
+							<Border Grid.Column="0"
+									Classes="timeRail">
+								<ItemsControl
+										  ItemsSource="{Binding HourLabels}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<StackPanel />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="sys:String">
+											<Border Classes="timeTick">
+												<TextBlock Classes="hourLabel"
+														   Text="{Binding}" />
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</Border>
+
+							<!-- Колонки дней -->
+							<ItemsControl Grid.Column="1"
+										  ItemsSource="{Binding Days}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<UniformGrid Columns="7" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate x:DataType="vm:WeekDayColumnViewModel">
+										<pages:DayColumnView DayColumn="{Binding}"
+															 OpenEventCommand="{Binding #Root.((vm:CalendarPageViewModel)DataContext).OpenEditEditorCommand}" />
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</Grid>
+					</ScrollViewer>
+				</Grid>
+			</Border>
+
+			<!-- ═══════ Правая панель: редактор события ═══════ -->
+			<Border Grid.Column="1"
+					Width="320"
+					Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					BoxShadow="0 2 12 0 #14000000"
+					Padding="20"
+					IsVisible="{Binding IsEditorOpen}">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+						<TextBlock FontSize="18"
+								   FontWeight="SemiBold"
+								   Foreground="{DynamicResource LabelPrimary}">
+							<TextBlock.IsVisible>
+								<Binding Path="IsEditingExisting" />
+							</TextBlock.IsVisible>
+							Редактировать событие
+						</TextBlock>
+						<TextBlock Text="Новое событие"
+								   FontSize="18"
+								   FontWeight="SemiBold"
+								   Foreground="{DynamicResource LabelPrimary}">
+							<TextBlock.IsVisible>
+								<Binding Path="!IsEditingExisting" />
+							</TextBlock.IsVisible>
+						</TextBlock>
+					</StackPanel>
+
+					<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+						<StackPanel Spacing="12">
+							<!-- Название -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Название"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<TextBox Classes="editorInput"
+										 Text="{Binding EditTitle}"
+										 Watermark="Введите название" />
+							</StackPanel>
+
+							<!-- Описание -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Описание"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<TextBox Classes="editorInput"
+										 Text="{Binding EditDescription}"
+										 Watermark="Необязательно"
+										 AcceptsReturn="True"
+										 Height="60"
+										 TextWrapping="Wrap" />
+							</StackPanel>
+
+							<!-- Календарь -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Календарь"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<ComboBox Classes="editorInput"
+										  ItemsSource="{Binding Calendars}"
+										  SelectedItem="{Binding EditCalendar}"
+										  HorizontalAlignment="Stretch">
+									<ComboBox.ItemTemplate>
+										<DataTemplate x:DataType="cal:CalendarDto">
+											<StackPanel Orientation="Horizontal" Spacing="8">
+												<Border Width="10"
+														Height="10"
+														CornerRadius="5"
+														Background="{Binding Color, Converter={x:Static conv:HexToBrushConverter.Instance}}"
+														VerticalAlignment="Center" />
+												<TextBlock Text="{Binding Name}" />
+											</StackPanel>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+							</StackPanel>
+
+							<!-- Цвет события -->
+							<StackPanel Spacing="8">
+								<TextBlock Text="Цвет события"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<ItemsControl ItemsSource="{Binding EventColors}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<WrapPanel />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="vm:EventColorOptionViewModel">
+											<Button Classes="colorSwatch"
+													Command="{Binding #Root.((vm:CalendarPageViewModel)DataContext).SelectEventColorCommand}"
+													CommandParameter="{Binding}"
+													ToolTip.Tip="{Binding Name}"
+													Margin="0,0,6,6">
+												<Grid>
+													<Border Width="24"
+															Height="24"
+															CornerRadius="12"
+															Background="{Binding Hex, Converter={x:Static conv:HexToBrushConverter.Instance}}"
+															HorizontalAlignment="Center"
+															VerticalAlignment="Center"
+															BoxShadow="0 1 5 0 #22000000" />
+													<Border Width="30"
+															Height="30"
+															CornerRadius="15"
+															BorderBrush="{DynamicResource LabelPrimary}"
+															BorderThickness="2"
+															IsVisible="{Binding IsSelected}" />
+													<TextBlock Text="✓"
+															   FontSize="12"
+															   FontWeight="Bold"
+															   Foreground="White"
+															   HorizontalAlignment="Center"
+															   VerticalAlignment="Center"
+															   IsVisible="{Binding IsSelected}" />
+												</Grid>
+											</Button>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+
+							<!-- Дата -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Дата"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<CalendarDatePicker SelectedDate="{Binding EditDate}"
+													Watermark="Выберите дату" />
+							</StackPanel>
+
+							<!-- Время начала -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Время начала"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<TimePicker SelectedTime="{Binding EditStartTime}"
+											HorizontalAlignment="Stretch" />
+							</StackPanel>
+
+							<!-- Время окончания -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Время окончания"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<TimePicker SelectedTime="{Binding EditEndTime}"
+											HorizontalAlignment="Stretch" />
+							</StackPanel>
+						</StackPanel>
+					</ScrollViewer>
+
+					<!-- Кнопки редактора -->
+					<StackPanel Grid.Row="2"
+								Spacing="8"
+								Margin="0,16,0,0">
+						<Button Classes="primaryBtn"
+								Content="Сохранить"
+								Command="{Binding SaveEventCommand}"
+								IsEnabled="{Binding !IsEditorBusy}"
+								HorizontalAlignment="Stretch" />
+						<Button Content="Отмена"
+								Command="{Binding CloseEditorCommand}"
+								HorizontalAlignment="Stretch"
+								Background="Transparent"
+								BorderBrush="{DynamicResource BorderSoft}"
+								BorderThickness="1"
+								CornerRadius="8"
+								Padding="0,8" />
+						<Button Content="Удалить"
+								Command="{Binding DeleteEventCommand}"
+								IsVisible="{Binding IsEditingExisting}"
+								HorizontalAlignment="Stretch"
+								Background="Transparent"
+								Foreground="#D32F2F"
+								BorderBrush="#D32F2F"
+								BorderThickness="1"
+								CornerRadius="8"
+								Padding="0,8" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</Grid>
+	</Grid>
+</UserControl>

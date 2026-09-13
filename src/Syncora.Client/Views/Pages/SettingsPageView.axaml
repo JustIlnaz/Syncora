@@ -1,0 +1,299 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Syncora.Client.ViewModels.Pages"
+			 x:Class="Syncora.Client.Views.Pages.SettingsPageView"
+			 x:Name="Root"
+			 x:DataType="vm:SettingsPageViewModel">
+
+	<UserControl.Styles>
+		<Style Selector="TextBlock.pageTitle">
+			<Setter Property="FontSize" Value="22" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<Style Selector="TextBlock.sectionTitle">
+			<Setter Property="FontSize" Value="16" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<Style Selector="Button.primaryBtn">
+			<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
+			<Setter Property="Foreground" Value="#FFFFFF" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="14,8" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Button.primaryBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
+		</Style>
+
+		<Style Selector="Button.secondaryBtn">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,6" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+		<Style Selector="Button.secondaryBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+		</Style>
+
+		<Style Selector="Button.dangerBtn">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Foreground" Value="#D32F2F" />
+			<Setter Property="BorderBrush" Value="#D32F2F" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,6" />
+			<Setter Property="Cursor" Value="Hand" />
+		</Style>
+
+		<Style Selector="TextBlock.errorText">
+			<Setter Property="Foreground" Value="#D32F2F" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+		<Style Selector="TextBlock.successText">
+			<Setter Property="Foreground" Value="#2E7D32" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+
+		<Style Selector="TextBox.input">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,8" />
+		</Style>
+
+		<Style Selector="ComboBox.input">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,6" />
+		</Style>
+
+		<Style Selector="Border.settingsCard">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="CornerRadius" Value="16" />
+			<Setter Property="BoxShadow" Value="0 2 12 0 #14000000" />
+			<Setter Property="Padding" Value="20" />
+		</Style>
+	</UserControl.Styles>
+
+	<Grid Background="{DynamicResource WindowBackground}"
+		  RowDefinitions="Auto,Auto,*">
+
+		<!-- ═══════ Заголовок ═══════ -->
+		<Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,16">
+			<TextBlock Classes="pageTitle" Text="Настройки" Grid.Column="0" />
+		</Grid>
+
+		<!-- Сообщения -->
+		<StackPanel Grid.Row="1" Margin="0,0,0,8">
+			<TextBlock Classes="errorText" Text="{Binding ErrorMessage}"
+					   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+			<TextBlock Classes="successText" Text="{Binding SuccessMessage}"
+					   IsVisible="{Binding SuccessMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+
+		<!-- ═══════ Контент ═══════ -->
+		<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+			<StackPanel Spacing="16" MaxWidth="720">
+
+				<!-- ── Профиль ── -->
+				<Border Classes="settingsCard">
+					<StackPanel Spacing="16">
+						<TextBlock Classes="sectionTitle" Text="Профиль" />
+
+						<Grid ColumnDefinitions="Auto,16,*">
+							<!-- Аватар -->
+							<Panel Grid.Column="0" Width="64" Height="64">
+								<Border Width="64" Height="64"
+										CornerRadius="32"
+										Background="{DynamicResource AccentPurpleLight}"
+										ClipToBounds="True"
+										IsVisible="{Binding !HasAvatar}">
+									<TextBlock Text="{Binding UserInitials}"
+											   FontSize="24"
+											   FontWeight="Bold"
+											   Foreground="{DynamicResource AccentPurpleDark}"
+											   HorizontalAlignment="Center"
+											   VerticalAlignment="Center" />
+								</Border>
+								<Border Width="64" Height="64"
+										CornerRadius="32"
+										ClipToBounds="True"
+										IsVisible="{Binding HasAvatar}">
+									<Image Source="{Binding AvatarImage}"
+										   Stretch="UniformToFill" />
+								</Border>
+							</Panel>
+
+							<StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Center">
+								<TextBlock Text="{Binding UserName}"
+											   FontSize="16"
+											   FontWeight="SemiBold"
+											   Foreground="{DynamicResource LabelPrimary}" />
+								<TextBlock Text="{Binding UserEmail}"
+											   FontSize="13"
+											   Foreground="{DynamicResource LabelSecondary}" />
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<Button x:Name="ChangeAvatarButton"
+											Content="Изменить аватар"
+											Classes="secondaryBtn"
+											IsEnabled="{Binding !IsAvatarBusy}" />
+									<Button Content="Удалить"
+											Classes="dangerBtn"
+											Command="{Binding RemoveAvatarCommand}"
+											IsEnabled="{Binding !IsAvatarBusy}"
+											IsVisible="{Binding HasAvatar}" />
+								</StackPanel>
+							</StackPanel>
+						</Grid>
+
+						<StackPanel Spacing="4">
+							<TextBlock Text="Имя" FontSize="12"
+									   Foreground="{DynamicResource LabelSecondary}" />
+							<TextBox Classes="input"
+									 Text="{Binding UserName}"
+									 Watermark="Ваше имя" />
+						</StackPanel>
+
+						<StackPanel Spacing="4">
+							<TextBlock Text="Часовой пояс" FontSize="12"
+									   Foreground="{DynamicResource LabelSecondary}" />
+							<ComboBox Classes="input"
+									  ItemsSource="{Binding AvailableTimezones}"
+									  SelectedItem="{Binding Timezone}"
+									  HorizontalAlignment="Stretch" />
+						</StackPanel>
+
+						<Button Classes="primaryBtn"
+								Content="Сохранить профиль"
+								Command="{Binding SaveProfileCommand}"
+								IsEnabled="{Binding !IsLoading}"
+								HorizontalAlignment="Left" />
+					</StackPanel>
+				</Border>
+
+				<!-- ── Рабочие часы ── -->
+				<Border Classes="settingsCard">
+					<StackPanel Spacing="16">
+						<TextBlock Classes="sectionTitle" Text="Рабочие часы" />
+
+						<ItemsControl ItemsSource="{Binding WorkingHours}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="vm:WorkingHoursItemViewModel">
+									<Grid ColumnDefinitions="120,Auto,8,Auto,8,Auto"
+										  Margin="0,4">
+										<TextBlock Grid.Column="0"
+												   Text="{Binding DayName}"
+												   FontSize="13"
+												   Foreground="{DynamicResource LabelPrimary}"
+												   VerticalAlignment="Center" />
+
+										<CheckBox Grid.Column="1"
+												  IsChecked="{Binding IsWorkingDay}"
+												  VerticalAlignment="Center" />
+
+										<TimePicker Grid.Column="3"
+													SelectedTime="{Binding StartTime}"
+													Width="100" />
+
+										<TextBlock Grid.Column="4"
+												   Text="—"
+												   VerticalAlignment="Center"
+												   HorizontalAlignment="Center" />
+
+										<TimePicker Grid.Column="5"
+													SelectedTime="{Binding EndTime}"
+													Width="100" />
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+
+						<Button Classes="primaryBtn"
+								Content="Сохранить часы"
+								Command="{Binding SaveWorkingHoursCommand}"
+								IsEnabled="{Binding !IsLoading}"
+								HorizontalAlignment="Left" />
+					</StackPanel>
+				</Border>
+
+				<!-- ── Аккаунт ── -->
+				<Border Classes="settingsCard">
+					<StackPanel Spacing="12">
+						<TextBlock Classes="sectionTitle" Text="Аккаунт" />
+						<Button Classes="secondaryBtn"
+								Content="Выйти из аккаунта"
+								Command="{Binding LogoutCommand}"
+								HorizontalAlignment="Left" />
+
+						<Border Background="{DynamicResource SurfaceSecondary}"
+								CornerRadius="12"
+								Padding="16"
+								Margin="0,8,0,0"
+								IsVisible="{Binding !ShowDeleteConfirmation}">
+							<StackPanel Spacing="10">
+								<TextBlock Text="Удаление профиля"
+											   FontSize="15"
+											   FontWeight="SemiBold"
+											   Foreground="{DynamicResource LabelPrimary}" />
+								<TextBlock Text="Аккаунт и связанные данные будут удалены без возможности восстановления."
+											   FontSize="13"
+											   Foreground="{DynamicResource LabelSecondary}"
+											   TextWrapping="Wrap"
+											   LineHeight="20" />
+								<Button Command="{Binding RequestDeleteCommand}"
+										Content="Удалить профиль"
+										Classes="dangerBtn"
+										HorizontalAlignment="Left" />
+							</StackPanel>
+						</Border>
+
+						<Border Background="#FDE8EE"
+								CornerRadius="12"
+								Padding="16"
+								Margin="0,8,0,0"
+								IsVisible="{Binding ShowDeleteConfirmation}">
+							<StackPanel Spacing="12">
+								<TextBlock Text="Вы уверены?"
+											   FontSize="15"
+											   FontWeight="SemiBold"
+											   Foreground="#D32F2F" />
+								<TextBlock Text="Это действие необратимо. Профиль будет удалён навсегда."
+											   FontSize="13"
+											   Foreground="{DynamicResource LabelSecondary}"
+											   TextWrapping="Wrap" />
+								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+									<Button Grid.Column="0"
+											Command="{Binding CancelDeleteCommand}"
+											Classes="secondaryBtn"
+											Content="Отмена"
+											IsEnabled="{Binding !IsDeleting}" />
+									<Button Grid.Column="1"
+											Command="{Binding ConfirmDeleteCommand}"
+											Background="#D32F2F"
+											Foreground="White"
+											BorderThickness="0"
+											CornerRadius="8"
+											Padding="10,6"
+											Cursor="Hand"
+											Content="Удалить"
+											IsEnabled="{Binding !IsDeleting}" />
+								</Grid>
+							</StackPanel>
+						</Border>
+					</StackPanel>
+				</Border>
+
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

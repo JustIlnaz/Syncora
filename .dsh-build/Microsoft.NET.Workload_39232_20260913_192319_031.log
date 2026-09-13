@@ -1,0 +1,14 @@
+[2026-09-13 19:23:19.034] [00009940] === Logging started ===
+[2026-09-13 19:23:19.042] [00009940] Executing: "C:\Program Files\dotnet\dotnet.exe" test Syncora.sln --no-build --no-restore, PID: 39232, PPID: 32932
+[2026-09-13 19:23:19.045] [00009940] IsElevated: False
+[2026-09-13 19:23:19.045] [00009940] Is64BitProcess: True
+[2026-09-13 19:23:19.045] [00009940] RebootPending: False
+[2026-09-13 19:23:19.045] [00009940] ProcessorArchitecture: amd64
+[2026-09-13 19:23:19.045] [00009940] HostArchitecture: x64
+[2026-09-13 19:23:19.045] [00009940] SdkDirectory: 10.0.401
+[2026-09-13 19:23:19.045] [00009940] VerifySignatures: False
+[2026-09-13 19:23:19.045] [00009940] SDK feature band: 10.0.400
+[2026-09-13 19:23:22.093] [00009940] Shutting down
+[2026-09-13 19:23:22.093] [00009940] Shutdown completed.
+[2026-09-13 19:23:22.093] [00009940] Restart required: False
+[2026-09-13 19:23:22.095] [00009940] === Logging ended ===

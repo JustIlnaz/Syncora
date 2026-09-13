@@ -1,24 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Syncora.DTO.Meeting
 {
+    /// <summary>
+    /// Создание встречи на выбранном слоте (ТЗ §18.3).
+    /// </summary>
     public class CreateMeetingRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Название обязательно")]
         [MaxLength(200)]
         public string Title { get; set; } = string.Empty;
 
         [Required]
-        [Range(15, 480)]
-        public int DurationMinutes { get; set; } = 60;
+        [MinLength(1, ErrorMessage = "Укажите хотя бы одного участника")]
+        public List<Guid> ParticipantIds { get; set; } = new();
 
         [Required]
-        public DateTime SearchStart { get; set; }
+        public DateTime Start { get; set; }
 
         [Required]
-        public DateTime SearchEnd { get; set; }
-
-        [Required]
-        public List<string> ParticipantEmails { get; set; } = new();
+        public DateTime End { get; set; }
     }
 }

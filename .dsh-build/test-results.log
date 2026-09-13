@@ -1,0 +1,43 @@
+﻿  Syncora.Api -> D:\Syncora\src\Syncora.Api\bin\Debug\net8.0\Syncora.Api.dll
+  Syncora.Api.Tests -> D:\Syncora\tests\Syncora.Api.Tests\bin\Debug\net8.0\Syncora.Api.Tests.dll
+Тестовый запуск для D:\Syncora\tests\Syncora.Api.Tests\bin\Debug\net8.0\Syncora.Api.Tests.dll (.NETCoreApp,Version=v8.0)
+Общее количество тестовых файлов (1), соответствующих указанному шаблону.
+Unhandled exception. System.ComponentModel.Win32Exception (5): �⪠���� � ����㯥.
+   at System.Diagnostics.ProcessManager.OpenProcess(Int32 processId, Int32 access, Boolean throwIfExited)
+   at System.Diagnostics.Process.GetProcessHandle(Int32 access, Boolean throwIfExited)
+   at System.Diagnostics.Process.GetOrOpenProcessHandle()
+   at System.Diagnostics.Process.EnsureWatchingForExit()
+   at System.Diagnostics.Process.set_EnableRaisingEvents(Boolean value)
+   at Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.ProcessHelper.SetExitCallback(Int32 processId, Action`1 callbackAction) in /_/src/Microsoft.TestPlatform.PlatformAbstractions/common/System/ProcessHelper.cs:line 281
+   at Microsoft.VisualStudio.TestPlatform.TestHost.DefaultEngineInvoker.SetParentProcessExitCallback(IDictionary`2 argsDictionary) in /_/src/testhost.x86/DefaultEngineInvoker.cs:line 242
+   at Microsoft.VisualStudio.TestPlatform.TestHost.DefaultEngineInvoker.Invoke(IDictionary`2 argsDictionary) in /_/src/testhost.x86/DefaultEngineInvoker.cs:line 138
+   at Microsoft.VisualStudio.TestPlatform.TestHost.Program.Run(String[] args, UiLanguageOverride uiLanguageOverride) in /_/src/testhost.x86/Program.cs:line 65
+   at Microsoft.VisualStudio.TestPlatform.TestHost.Program.Run(String[] args) in /_/src/testhost.x86/Program.cs:line 54
+   at Microsoft.VisualStudio.TestPlatform.TestHost.Program.Main(String[] args) in /_/src/testhost.x86/Program.cs:line 37
+dotnet : Процесс testhost для источника (-ов) D:\Syncora\tests\Syncora.Api.Tests\bin\Debug\net8.0\Syncora.Api.Tests.dll
+ завершился с ошибкой. Unhandled exception. System.ComponentModel.Win32Exception (5): �⪠���� � ����㯥.
+At D:\Syncora\.dsh-build\test-api3.ps1:5 char:8
++ $out = dotnet test D:\Syncora\tests\Syncora.Api.Tests\Syncora.Api.Tes ...
++        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Процесс testhos...�⪠���� � ����㯥.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   at System.Diagnostics.ProcessManager.OpenProcess(Int32 processId, Int32 access, Boolean throwIfExited)
+   at System.Diagnostics.Process.GetProcessHandle(Int32 access, Boolean throwIfExited)
+   at System.Diagnostics.Process.GetOrOpenProcessHandle()
+   at System.Diagnostics.Process.EnsureWatchingForExit()
+   at System.Diagnostics.Process.set_EnableRaisingEvents(Boolean value)
+   at Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.ProcessHelper.SetExitCallback(Int32 processId, Action`1 
+callbackAction) in /_/src/Microsoft.TestPlatform.PlatformAbstractions/common/System/ProcessHelper.cs:line 281
+   at Microsoft.VisualStudio.TestPlatform.TestHost.DefaultEngineInvoker.SetParentProcessExitCallback(IDictionary`2 args
+Dictionary) in /_/src/testhost.x86/DefaultEngineInvoker.cs:line 242
+   at Microsoft.VisualStudio.TestPlatform.TestHost.DefaultEngineInvoker.Invoke(IDictionary`2 argsDictionary) in /_/src/
+testhost.x86/DefaultEngineInvoker.cs:line 138
+   at Microsoft.VisualStudio.TestPlatform.TestHost.Program.Run(String[] args, UiLanguageOverride uiLanguageOverride) in
+ /_/src/testhost.x86/Program.cs:line 65
+   at Microsoft.VisualStudio.TestPlatform.TestHost.Program.Run(String[] args) in /_/src/testhost.x86/Program.cs:line 54
+   at Microsoft.VisualStudio.TestPlatform.TestHost.Program.Main(String[] args) in /_/src/testhost.x86/Program.cs:line 3
+7
+Дополнительные сведения см. в журналах диагностики.
+
+Тестовый запуск прерван.

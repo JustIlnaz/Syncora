@@ -7,7 +7,7 @@ using Syncora.Services;
 namespace Syncora.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/users")]
     [Authorize]
     public class UsersController : ControllerBase
     {
@@ -41,7 +41,7 @@ namespace Syncora.Controllers
         }
 
         [HttpPost("me/avatar")]
-        [RequestSizeLimit(2_097_152)]
+        [RequestSizeLimit(5_242_880)]
         public async Task<IActionResult> UploadAvatar(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -79,6 +79,16 @@ namespace Syncora.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var result = await _userService.UpdateWorkingHoursAsync(CurrentUserId, request);
+            return Ok(result);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+                return Ok(new List<UserSearchResultDto>());
+
+            var result = await _userService.SearchUsersAsync(query, CurrentUserId);
             return Ok(result);
         }
 

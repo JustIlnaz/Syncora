@@ -15,8 +15,8 @@
         ExtendClientAreaChromeHints="PreferSystemChrome"
         TransparencyLevelHint="Mica, AcrylicBlur"
         Background="Transparent"
-        Width="520" Height="900"
-        MinWidth="480" MinHeight="860">
+        Width="1280" Height="820"
+        MinWidth="960" MinHeight="640">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>

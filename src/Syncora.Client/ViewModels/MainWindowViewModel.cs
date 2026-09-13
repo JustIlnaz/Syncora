@@ -1,8 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using Syncora.Client.Messages;
 using Syncora.Client.Services;
+using System;
 
 namespace Syncora.Client.ViewModels;
 
@@ -14,6 +16,7 @@ public partial class MainWindowViewModel : ViewModelBase,
     private readonly AuthViewModel _authViewModel;
     private readonly AuthSessionStore _sessionStore;
     private readonly ApiClient _apiClient;
+    private readonly IServiceProvider _serviceProvider;
 
     public string Greeting { get; } = "Syncora";
 
@@ -23,11 +26,13 @@ public partial class MainWindowViewModel : ViewModelBase,
     public MainWindowViewModel(
         AuthViewModel authViewModel,
         AuthSessionStore sessionStore,
-        ApiClient apiClient)
+        ApiClient apiClient,
+        IServiceProvider serviceProvider)
     {
         _authViewModel = authViewModel;
         _sessionStore = sessionStore;
         _apiClient = apiClient;
+        _serviceProvider = serviceProvider;
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
@@ -35,10 +40,7 @@ public partial class MainWindowViewModel : ViewModelBase,
         if (session?.RememberMe == true && !string.IsNullOrWhiteSpace(session.Token))
         {
             apiClient.SetToken(session.Token);
-            CurrentView = new DashboardViewModel(
-                session.UserName,
-                session.Email,
-                session.Token);
+            CurrentView = CreateAppShell(session.UserName, session.Email);
         }
         else
         {
@@ -46,19 +48,24 @@ public partial class MainWindowViewModel : ViewModelBase,
         }
     }
 
+    private AppShellViewModel CreateAppShell(string userName, string email)
+    {
+        return new AppShellViewModel(
+            userName,
+            email,
+            _serviceProvider.GetRequiredService<UserProfileService>(),
+            _sessionStore,
+            _apiClient);
+    }
+
     public void Receive(NavigateToMainMessage message)
     {
-        CurrentView = new DashboardViewModel(message.UserName, message.Email, message.Token);
+        CurrentView = CreateAppShell(message.UserName, message.Email);
     }
 
     public void Receive(NavigateToCalendarMessage message)
     {
-        CurrentView = new AppShellViewModel(
-            message.UserName,
-            message.Email,
-            Ioc.Default.GetRequiredService<UserProfileService>(),
-            _sessionStore,
-            _apiClient);
+        CurrentView = CreateAppShell(message.UserName, message.Email);
     }
 
     public void Receive(LogoutMessage message)

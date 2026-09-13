@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Syncora.Client.ViewModels.Pages;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,8 +39,17 @@ public partial class ProfilePageView : UserControl
             return;
 
         var file = files[0];
-        await using var stream = await file.OpenReadAsync();
         var fileName = file.Name;
-        await viewModel.UploadAvatarAsync(stream, fileName);
+
+        // Читаем файл в память сразу: stream из StorageProvider может быть
+        // недоступен/медленен во время multipart-отправки на сервер.
+        var buffer = new MemoryStream();
+        await using (var source = await file.OpenReadAsync())
+        {
+            await source.CopyToAsync(buffer);
+        }
+        buffer.Position = 0;
+
+        await viewModel.UploadAvatarAsync(buffer, fileName);
     }
 }

@@ -108,12 +108,91 @@ namespace Syncora.Services
             return (await GetByIdAsync(list.Id, userId))!;
         }
 
+        public async Task<ShoppingListDto?> UpdateAsync(Guid listId, UpdateShoppingListRequest request, Guid userId)
+        {
+            var list = await _context.ShoppingLists
+                .Include(s => s.Members)
+                .FirstOrDefaultAsync(s => s.Id == listId);
+
+            if (list == null) return null;
+            if (list.OwnerId != userId) return null;
+
+            if (request.Name != null) list.Name = request.Name;
+            if (request.IsShared.HasValue) list.IsShared = request.IsShared.Value;
+            list.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return await GetByIdAsync(listId, userId);
+        }
+
         public async Task<bool> DeleteAsync(Guid listId, Guid userId)
         {
             var list = await _context.ShoppingLists.FirstOrDefaultAsync(s => s.Id == listId);
             if (list == null || list.OwnerId != userId) return false;
 
             _context.ShoppingLists.Remove(list);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<ShoppingListDto?> AddMemberAsync(Guid listId, AddShoppingListMemberRequest request, Guid userId)
+        {
+            var list = await _context.ShoppingLists
+                .Include(s => s.Members)
+                .FirstOrDefaultAsync(s => s.Id == listId);
+
+            if (list == null) return null;
+            if (list.OwnerId != userId) return null;
+
+            var email = request.Email.ToLower().Trim();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) return null;
+
+            if (list.Members.Any(m => m.UserId == user.Id))
+                return await GetByIdAsync(listId, userId); // already a member
+
+            _context.ShoppingListMembers.Add(new ShoppingListMember
+            {
+                Id = Guid.NewGuid(),
+                ShoppingListId = listId,
+                UserId = user.Id,
+                Role = request.Role ?? "member",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+            _context.Notifications.Add(new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Type = "shopping_list_invite",
+                Title = "Новый общий список",
+                Message = $"Вас добавили в список '{list.Name}'",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetByIdAsync(listId, userId);
+        }
+
+        public async Task<bool> RemoveMemberAsync(Guid listId, Guid memberUserId, Guid currentUserId)
+        {
+            var list = await _context.ShoppingLists
+                .Include(s => s.Members)
+                .FirstOrDefaultAsync(s => s.Id == listId);
+
+            if (list == null) return false;
+            if (list.OwnerId != currentUserId) return false;
+
+            var member = list.Members.FirstOrDefault(m => m.UserId == memberUserId);
+            if (member == null) return false;
+
+            // Нельзя удалить владельца
+            if (member.UserId == list.OwnerId) return false;
+
+            _context.ShoppingListMembers.Remove(member);
             await _context.SaveChangesAsync();
             return true;
         }

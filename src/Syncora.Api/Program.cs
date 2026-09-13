@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -73,6 +74,17 @@ builder.Services.AddControllers()
     });
 
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("api", window =>
+    {
+        window.PermitLimit = 100;
+        window.Window = TimeSpan.FromMinutes(1);
+        window.QueueLimit = 0;
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -81,7 +93,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Syncora API",
         Version = "v1",
-        Description = "Syncora API — calendars, meetings, shopping lists"
+        Description = "Syncora API â€” calendars, meetings, shopping lists"
     });
 
     c.MapType<TimeSpan>(() => new OpenApiSchema
@@ -125,7 +137,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseRateLimiter();
+
+// app.UseHttpsRedirection(); // Otklyucheno: prilozhenie rabotaet tolko po HTTP v dev
 
 Directory.CreateDirectory(Path.Combine(app.Environment.WebRootPath!, "avatars"));
 
@@ -135,6 +149,8 @@ app.UseCors("AllowFrontend");
 
 app.UseAuthentication(); 
 app.UseAuthorization();
+
+app.UseMiddleware<Syncora.Middleware.ExceptionMiddleware>();
 
 app.MapControllers();
 

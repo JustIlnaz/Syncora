@@ -37,7 +37,7 @@
                                     CornerRadius="44"
                                     ClipToBounds="True"
                                     IsVisible="{Binding HasAvatar}">
-                                <Image Source="{Binding AvatarDisplayUrl}"
+                                <Image Source="{Binding AvatarImage}"
                                        Stretch="UniformToFill"
                                        Width="88"
                                        Height="88" />

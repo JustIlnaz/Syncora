@@ -7,6 +7,8 @@ namespace Syncora.Data
     {
         public static async Task InitializeAsync(SyncoraDbContext context)
         {
+            await EnsureSchemaAsync(context);
+
             if (await context.Users.AnyAsync())
                 return;
 
@@ -354,6 +356,12 @@ namespace Syncora.Data
                 }
             );
             await context.SaveChangesAsync();
+        }
+
+        private static async Task EnsureSchemaAsync(SyncoraDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                "ALTER TABLE events ADD COLUMN IF NOT EXISTS \"Color\" character varying(20);");
         }
     }
 }

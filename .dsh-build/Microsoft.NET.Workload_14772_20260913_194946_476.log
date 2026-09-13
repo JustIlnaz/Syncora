@@ -1,0 +1,14 @@
+[2026-09-13 19:49:46.477] [000039B4] === Logging started ===
+[2026-09-13 19:49:46.484] [000039B4] Executing: "C:\Program Files\dotnet\dotnet.exe" build src\Syncora.Client\Syncora.Client.csproj --no-restore /p:OutputPath=D:\Syncora\.dsh-build\client-check\ /p:BaseIntermediateOutputPath=D:\Syncora\.dsh-build\client-obj\, PID: 14772, PPID: 25372
+[2026-09-13 19:49:46.485] [000039B4] IsElevated: False
+[2026-09-13 19:49:46.485] [000039B4] Is64BitProcess: True
+[2026-09-13 19:49:46.485] [000039B4] RebootPending: False
+[2026-09-13 19:49:46.485] [000039B4] ProcessorArchitecture: amd64
+[2026-09-13 19:49:46.485] [000039B4] HostArchitecture: x64
+[2026-09-13 19:49:46.485] [000039B4] SdkDirectory: 10.0.401
+[2026-09-13 19:49:46.485] [000039B4] VerifySignatures: False
+[2026-09-13 19:49:46.485] [000039B4] SDK feature band: 10.0.400
+[2026-09-13 19:49:46.931] [000039B4] Shutting down
+[2026-09-13 19:49:46.931] [000039B4] Shutdown completed.
+[2026-09-13 19:49:46.931] [000039B4] Restart required: False
+[2026-09-13 19:49:46.932] [000039B4] === Logging ended ===

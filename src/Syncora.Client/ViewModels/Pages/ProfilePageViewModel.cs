@@ -1,3 +1,4 @@
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -22,6 +23,9 @@ public partial class ProfilePageViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(HasAvatar))]
     [NotifyPropertyChangedFor(nameof(AvatarDisplayUrl))]
     private string? avatarUrl;
+
+    [ObservableProperty]
+    private Bitmap? avatarImage;
 
     [ObservableProperty]
     private int avatarVersion;
@@ -115,6 +119,8 @@ public partial class ProfilePageViewModel : ViewModelBase
 
             ApplyProfile(updated);
             AvatarVersion++;
+            AvatarImageLoader.Invalidate(updated.AvatarUrl);
+            await RefreshAvatarImageAsync();
             SuccessMessage = "Аватар обновлён.";
             NotifyProfileUpdated();
         }
@@ -147,6 +153,7 @@ public partial class ProfilePageViewModel : ViewModelBase
             var updated = await _profileService.DeleteAvatarAsync();
             ApplyProfile(updated);
             AvatarVersion++;
+            await RefreshAvatarImageAsync();
             SuccessMessage = "Аватар удалён.";
             NotifyProfileUpdated();
         }
@@ -258,6 +265,13 @@ public partial class ProfilePageViewModel : ViewModelBase
         Email = profile.Email;
         Timezone = profile.Timezone ?? TimeZoneInfo.Local.Id;
         AvatarUrl = profile.AvatarUrl;
+        _ = RefreshAvatarImageAsync();
+    }
+
+    private async Task RefreshAvatarImageAsync()
+    {
+        var image = await AvatarImageLoader.LoadAsync(AvatarUrl, AvatarVersion);
+        AvatarImage = image;
     }
 
     private void NotifyProfileUpdated()

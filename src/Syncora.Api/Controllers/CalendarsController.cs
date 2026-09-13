@@ -8,7 +8,7 @@ using Syncora.DTO.Event;
 namespace Syncora.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/calendars")]
     [Authorize]
     public class CalendarsController : ControllerBase
     {

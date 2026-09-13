@@ -13,6 +13,7 @@ namespace Syncora.Data.Configurations
 
             builder.Property(e => e.Title).HasMaxLength(200).IsRequired();
             builder.Property(e => e.Description);
+            builder.Property(e => e.Color).HasMaxLength(20);
             builder.Property(e => e.Location).HasMaxLength(200);
             builder.Property(e => e.IsAllDay).IsRequired();
 

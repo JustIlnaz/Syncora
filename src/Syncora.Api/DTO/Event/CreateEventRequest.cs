@@ -13,6 +13,9 @@ namespace Syncora.DTO.Event
 
         public string? Description { get; set; }
 
+        [MaxLength(20)]
+        public string? Color { get; set; }
+
         [Required]
         public DateTime StartAt { get; set; }
 

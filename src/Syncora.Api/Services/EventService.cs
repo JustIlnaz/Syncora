@@ -80,6 +80,7 @@ namespace Syncora.Services
                 CreatorId = userId,
                 Title = request.Title,
                 Description = request.Description,
+                Color = NormalizeColor(request.Color),
                 StartAt = request.StartAt,
                 EndAt = request.EndAt,
                 Location = request.Location,
@@ -107,6 +108,7 @@ namespace Syncora.Services
 
             if (request.Title != null) ev.Title = request.Title;
             if (request.Description != null) ev.Description = request.Description;
+            if (request.Color != null) ev.Color = NormalizeColor(request.Color);
             if (request.StartAt.HasValue) ev.StartAt = request.StartAt.Value;
             if (request.EndAt.HasValue) ev.EndAt = request.EndAt.Value;
             if (request.Location != null) ev.Location = request.Location;
@@ -158,6 +160,7 @@ namespace Syncora.Services
                 CreatorName = e.Creator?.Name ?? "",
                 Title = e.Title,
                 Description = e.Description,
+                Color = e.Color,
                 StartAt = e.StartAt,
                 EndAt = e.EndAt,
                 Location = e.Location,
@@ -174,6 +177,14 @@ namespace Syncora.Services
                     Count = e.Recurrence.Count
                 }
             };
+        }
+
+        private static string? NormalizeColor(string? color)
+        {
+            if (string.IsNullOrWhiteSpace(color))
+                return null;
+
+            return color.Trim();
         }
     }
 }

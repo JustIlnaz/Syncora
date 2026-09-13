@@ -7,7 +7,7 @@ using Syncora.Services;
 namespace Syncora.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/shopping-lists")]
     [Authorize]
     public class ShoppingListsController : ControllerBase
     {
@@ -46,11 +46,37 @@ namespace Syncora.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateShoppingListRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _shoppingService.UpdateAsync(id, request, CurrentUserId);
+            if (result == null) return NotFound(new { message = "Список не найден или нет прав" });
+            return Ok(result);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var ok = await _shoppingService.DeleteAsync(id, CurrentUserId);
             if (!ok) return NotFound(new { message = "Список не найден или нет прав" });
+            return NoContent();
+        }
+
+        [HttpPost("{id}/members")]
+        public async Task<IActionResult> AddMember(Guid id, [FromBody] AddShoppingListMemberRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _shoppingService.AddMemberAsync(id, request, CurrentUserId);
+            if (result == null) return NotFound(new { message = "Список не найден, нет прав или пользователь не найден" });
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}/members/{userId}")]
+        public async Task<IActionResult> RemoveMember(Guid id, Guid userId)
+        {
+            var ok = await _shoppingService.RemoveMemberAsync(id, userId, CurrentUserId);
+            if (!ok) return NotFound(new { message = "Участник не найден или нет прав" });
             return NoContent();
         }
 
@@ -64,6 +90,7 @@ namespace Syncora.Controllers
         }
 
         [HttpPut("items/{itemId}")]
+        [HttpPut("{id}/items/{itemId}")]
         public async Task<IActionResult> UpdateItem(Guid itemId, [FromBody] UpdateShoppingItemRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -73,6 +100,7 @@ namespace Syncora.Controllers
         }
 
         [HttpDelete("items/{itemId}")]
+        [HttpDelete("{id}/items/{itemId}")]
         public async Task<IActionResult> DeleteItem(Guid itemId)
         {
             var ok = await _shoppingService.DeleteItemAsync(itemId, CurrentUserId);

@@ -11,7 +11,7 @@
                       Padding="24,28,24,32">
             <Grid MinHeight="{Binding Viewport.Height, ElementName=AuthScrollViewer}">
                 <Border Background="{DynamicResource SurfaceBackground}"
-                        Width="460"
+                        Width="480"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"
                         CornerRadius="16"

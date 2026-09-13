@@ -1,0 +1,423 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Syncora.Client.ViewModels.Pages"
+			 xmlns:meet="using:Syncora.Client.Models.Meeting"
+			 x:Class="Syncora.Client.Views.Pages.MeetingsPageView"
+			 x:Name="Root"
+			 x:DataType="vm:MeetingsPageViewModel">
+
+	<UserControl.Styles>
+		<Style Selector="TextBlock.pageTitle">
+			<Setter Property="FontSize" Value="22" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<Style Selector="Button.primaryBtn">
+			<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
+			<Setter Property="Foreground" Value="#FFFFFF" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="14,8" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Button.primaryBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
+		</Style>
+
+		<Style Selector="Button.secondaryBtn">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="12,6" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+		<Style Selector="Button.secondaryBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+		</Style>
+
+		<Style Selector="Button.dangerBtn">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Foreground" Value="#D32F2F" />
+			<Setter Property="BorderBrush" Value="#D32F2F" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="12,6" />
+			<Setter Property="Cursor" Value="Hand" />
+		</Style>
+
+		<Style Selector="TextBlock.sectionTitle">
+			<Setter Property="FontSize" Value="16" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<Style Selector="TextBlock.errorText">
+			<Setter Property="Foreground" Value="#D32F2F" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+		<Style Selector="TextBlock.successText">
+			<Setter Property="Foreground" Value="#2E7D32" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+
+		<Style Selector="TextBox.input">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,8" />
+		</Style>
+
+		<!-- Карточка встречи -->
+		<Style Selector="Border.meetingCard">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="CornerRadius" Value="12" />
+			<Setter Property="BoxShadow" Value="0 2 12 0 #14000000" />
+			<Setter Property="Padding" Value="16" />
+		</Style>
+
+		<!-- Слот времени -->
+		<Style Selector="Border.slotCard">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="12,10" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Margin" Value="0,4" />
+		</Style>
+		<Style Selector="Border.slotCard.selected">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentPurple}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+
+		<!-- Чекбокс участника -->
+		<Style Selector="Border.participantRow">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="8" />
+			<Setter Property="Cursor" Value="Hand" />
+		</Style>
+		<Style Selector="Border.participantRow:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+		</Style>
+		<Style Selector="Border.participantRow.selected">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+		</Style>
+	</UserControl.Styles>
+
+	<Grid Background="{DynamicResource WindowBackground}"
+		  RowDefinitions="Auto,Auto,*">
+
+		<!-- ═══════ Заголовок ═══════ -->
+		<Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
+			<TextBlock Classes="pageTitle" Text="Встречи" Grid.Column="0" />
+			<Button Grid.Column="2"
+					Classes="primaryBtn"
+					Content="+ Сформировать встречу"
+					Command="{Binding OpenSearchPanelCommand}" />
+		</Grid>
+
+		<!-- Сообщения -->
+		<StackPanel Grid.Row="1" Margin="0,0,0,8">
+			<TextBlock Classes="errorText" Text="{Binding ErrorMessage}"
+					   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+			<TextBlock Classes="successText" Text="{Binding SuccessMessage}"
+					   IsVisible="{Binding SuccessMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+
+		<!-- ═══════ Контент ═══════ -->
+		<Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+
+			<!-- Список встреч -->
+			<ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+				<StackPanel Spacing="12">
+					<TextBlock Classes="sectionTitle" Text="Мои встречи" Margin="0,0,0,4" />
+
+					<ItemsControl ItemsSource="{Binding Meetings}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="meet:MeetingDto">
+								<Border Classes="meetingCard" Margin="0,0,0,8">
+									<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+										<StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+											<TextBlock Text="{Binding Title}"
+													   FontSize="15"
+													   FontWeight="SemiBold"
+													   Foreground="{DynamicResource LabelPrimary}" />
+											<TextBlock Foreground="{DynamicResource LabelSecondary}"
+													   FontSize="13">
+												<Run Text="{Binding SelectedSlotStart, StringFormat='{}{0:dd MMMM, HH:mm}'}" />
+												<Run Text=" — " />
+												<Run Text="{Binding SelectedSlotEnd, StringFormat='{}{0:HH:mm}'}" />
+											</TextBlock>
+											<TextBlock Foreground="{DynamicResource LabelMuted}"
+													   FontSize="12">
+												<Run Text="Создал: " />
+												<Run Text="{Binding CreatorName}" />
+											</TextBlock>
+										</StackPanel>
+
+										<StackPanel Grid.Row="0" Grid.Column="1"
+													Orientation="Horizontal"
+													Spacing="8"
+													VerticalAlignment="Top">
+											<Button Classes="secondaryBtn"
+													Content="Принять"
+													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).AcceptMeetingCommand}"
+													CommandParameter="{Binding}" />
+											<Button Classes="secondaryBtn"
+													Content="Отклонить"
+													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).DeclineMeetingCommand}"
+													CommandParameter="{Binding}" />
+											<Button Classes="dangerBtn"
+													Content="✕"
+													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).DeleteMeetingCommand}"
+													CommandParameter="{Binding}" />
+										</StackPanel>
+
+										<!-- Участники -->
+										<ItemsControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+													  ItemsSource="{Binding Participants}"
+													  Margin="0,8,0,0">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Horizontal" Spacing="4" />
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate x:DataType="meet:MeetingParticipantDto">
+													<Border Background="{DynamicResource AccentPurpleTint}"
+															CornerRadius="12"
+															Padding="8,4">
+														<TextBlock FontSize="12"
+																   Foreground="{DynamicResource AccentPurpleDark}">
+															<Run Text="{Binding UserName}" />
+															<Run Text="(" />
+															<Run Text="{Binding Status}" />
+															<Run Text=")" />
+														</TextBlock>
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+					<TextBlock Text="Нет встреч"
+							   FontSize="14"
+							   Foreground="{DynamicResource LabelMuted}"
+							   HorizontalAlignment="Center"
+							   Margin="0,32">
+						<TextBlock.IsVisible>
+							<Binding Path="Meetings.Count"
+									 Converter="{x:Static ObjectConverters.Equal}"
+									 ConverterParameter="0" />
+						</TextBlock.IsVisible>
+					</TextBlock>
+				</StackPanel>
+			</ScrollViewer>
+
+			<!-- ═══════ Правая панель «Сформировать встречу» ═══════ -->
+			<Border Grid.Column="1"
+					Width="360"
+					Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					BoxShadow="0 2 12 0 #14000000"
+					Padding="20"
+					IsVisible="{Binding IsSearchPanelOpen}">
+				<Grid RowDefinitions="Auto,*,Auto">
+
+					<StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+						<TextBlock Text="Сформировать встречу"
+								   FontSize="18"
+								   FontWeight="SemiBold"
+								   Foreground="{DynamicResource LabelPrimary}" />
+						<TextBlock Text="Найдите общее свободное время"
+								   FontSize="13"
+								   Foreground="{DynamicResource LabelSecondary}" />
+					</StackPanel>
+
+					<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+						<StackPanel Spacing="16">
+
+							<!-- Название встречи -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Название"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<TextBox Classes="input"
+										 Text="{Binding SearchTitle}"
+										 Watermark="Введите название встречи" />
+							</StackPanel>
+
+							<!-- Участники -->
+							<StackPanel Spacing="4">
+								<TextBlock FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}">
+									<Run Text="Участники (" />
+									<Run Text="{Binding SelectedParticipants.Count}" />
+									<Run Text=" из 9)" />
+								</TextBlock>
+								<ItemsControl ItemsSource="{Binding AvailableContacts}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="vm:ParticipantItemViewModel">
+											<Border Classes="participantRow"
+													Classes.selected="{Binding IsSelected}">
+												<StackPanel Orientation="Horizontal" Spacing="8">
+													<CheckBox IsChecked="{Binding IsSelected}"
+															  Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).ToggleParticipantCommand}"
+															  CommandParameter="{Binding}" />
+													<TextBlock VerticalAlignment="Center">
+														<Run Text="{Binding Name}"
+															 FontWeight="Medium" />
+														<Run Text=" — " />
+														<Run Text="{Binding Email}"
+															 Foreground="{DynamicResource LabelMuted}"
+															 FontSize="12" />
+													</TextBlock>
+												</StackPanel>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+
+							<!-- Длительность -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Длительность"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<ItemsControl ItemsSource="{Binding DurationPresets}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<WrapPanel Orientation="Horizontal" />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="vm:DurationPreset">
+											<Button Classes="secondaryBtn"
+													Content="{Binding Label}"
+													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).SelectDurationCommand}"
+													CommandParameter="{Binding}"
+													Margin="0,0,6,6" />
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+								<TextBlock FontSize="12"
+										   Foreground="{DynamicResource AccentPurpleDark}"
+										   FontWeight="Medium">
+									<Run Text="Выбрано: " />
+									<Run Text="{Binding SelectedDurationText}" />
+								</TextBlock>
+							</StackPanel>
+
+							<!-- Период поиска -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Дата от"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<CalendarDatePicker SelectedDate="{Binding SearchDateFrom}"
+													Watermark="Дата начала" />
+
+								<TextBlock Text="Дата до"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}"
+										   Margin="0,4,0,0" />
+								<CalendarDatePicker SelectedDate="{Binding SearchDateTo}"
+													Watermark="Дата окончания" />
+							</StackPanel>
+
+							<!-- Время поиска -->
+							<Grid ColumnDefinitions="*,8,*">
+								<StackPanel Grid.Column="0" Spacing="4">
+									<TextBlock Text="Время от" FontSize="12"
+											   Foreground="{DynamicResource LabelSecondary}" />
+									<TimePicker SelectedTime="{Binding SearchTimeFrom}" HorizontalAlignment="Stretch" />
+								</StackPanel>
+								<StackPanel Grid.Column="2" Spacing="4">
+									<TextBlock Text="Время до" FontSize="12"
+											   Foreground="{DynamicResource LabelSecondary}" />
+									<TimePicker SelectedTime="{Binding SearchTimeTo}" HorizontalAlignment="Stretch" />
+								</StackPanel>
+							</Grid>
+
+							<!-- Кнопка поиска -->
+							<Button Classes="primaryBtn"
+									Command="{Binding SearchSlotsCommand}"
+									IsEnabled="{Binding !IsSearching}"
+									HorizontalAlignment="Stretch">
+								<Panel>
+									<TextBlock Text="Найти время"
+											   IsVisible="{Binding !IsSearching}" />
+									<TextBlock Text="Поиск..."
+											   IsVisible="{Binding IsSearching}" />
+								</Panel>
+							</Button>
+
+							<!-- Результаты поиска -->
+							<StackPanel Spacing="4">
+								<StackPanel.IsVisible>
+									<Binding Path="FoundSlots.Count"
+											 Converter="{x:Static ObjectConverters.NotEqual}"
+											 ConverterParameter="0" />
+								</StackPanel.IsVisible>
+								<TextBlock Text="Доступные слоты:"
+										   FontSize="13"
+										   FontWeight="SemiBold"
+										   Foreground="{DynamicResource LabelPrimary}" />
+								<ItemsControl ItemsSource="{Binding FoundSlots}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="vm:MeetingSlotViewModel">
+											<Border Classes="slotCard"
+													Classes.selected="{Binding IsSelected}">
+												<Button Background="Transparent"
+														BorderThickness="0"
+														Padding="0"
+														HorizontalAlignment="Stretch"
+														HorizontalContentAlignment="Left"
+														Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).SelectSlotCommand}"
+														CommandParameter="{Binding}">
+													<StackPanel Spacing="2">
+														<TextBlock Text="{Binding TimeText}"
+																   FontWeight="SemiBold"
+																   FontSize="14"
+																   Foreground="{DynamicResource LabelPrimary}" />
+														<TextBlock Text="{Binding DateText}"
+																   FontSize="12"
+																   Foreground="{DynamicResource LabelSecondary}" />
+													</StackPanel>
+												</Button>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+						</StackPanel>
+					</ScrollViewer>
+
+					<!-- Кнопки панели -->
+					<StackPanel Grid.Row="2" Spacing="8" Margin="0,16,0,0">
+						<Button Classes="primaryBtn"
+								Content="Подтвердить встречу"
+								Command="{Binding ConfirmMeetingCommand}"
+								IsEnabled="{Binding !IsSearching}"
+								HorizontalAlignment="Stretch" />
+						<Button Content="Закрыть"
+								Command="{Binding CloseSearchPanelCommand}"
+								HorizontalAlignment="Stretch"
+								Background="Transparent"
+								BorderBrush="{DynamicResource BorderSoft}"
+								BorderThickness="1"
+								CornerRadius="8"
+								Padding="0,8" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</Grid>
+	</Grid>
+</UserControl>

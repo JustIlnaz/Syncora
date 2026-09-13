@@ -1,83 +1,99 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Syncora.Data;
 using Syncora.DTO.Meeting;
 using Syncora.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Syncora.Services
 {
     public class MeetingService
     {
         private readonly SyncoraDbContext _context;
+        private readonly MeetingSearchService _searchService;
 
-        public MeetingService(SyncoraDbContext context)
+        public MeetingService(SyncoraDbContext context, MeetingSearchService searchService)
         {
             _context = context;
+            _searchService = searchService;
         }
 
+        /// <summary>
+        /// Создание встречи на выбранном слоте (ТЗ §18.3).
+        /// Перед сохранением выполняется повторная проверка занятости всех участников (ТЗ §10.2).
+        /// </summary>
         public async Task<MeetingDto> CreateAsync(CreateMeetingRequest request, Guid creatorId)
         {
-            if (request.SearchEnd <= request.SearchStart)
-                throw new InvalidOperationException("Дата окончания поиска должна быть позже даты начала");
+            if (request.End <= request.Start)
+                throw new InvalidOperationException("Время окончания встречи должно быть позже начала");
+
+            var participantIds = request.ParticipantIds
+                .Where(id => id != Guid.Empty)
+                .Append(creatorId)
+                .Distinct()
+                .ToList();
+
+            if (participantIds.Count < 2)
+                throw new InvalidOperationException("Во встрече должно быть минимум 2 участника (§9.1)");
+            if (participantIds.Count > 10)
+                throw new InvalidOperationException("Во встрече может быть не более 10 участников (§9.1)");
+
+            var existingUsers = await _context.Users
+                .Where(u => participantIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u);
+
+            if (existingUsers.Count != participantIds.Count)
+                throw new InvalidOperationException("Некоторые из указанных участников не найдены");
+
+            // ТЗ §10.2: слот мог быть занят после поиска — проверяем занятость повторно
+            await _searchService.EnsureSlotAvailableAsync(
+                creatorId, participantIds, request.Start, request.End);
 
             var meeting = new Meeting
             {
                 Id = Guid.NewGuid(),
                 CreatorId = creatorId,
                 Title = request.Title,
-                DurationMinutes = request.DurationMinutes,
-                SearchStart = request.SearchStart,
-                SearchEnd = request.SearchEnd,
-                Status = "pending",
+                DurationMinutes = (int)(request.End - request.Start).TotalMinutes,
+                SearchStart = request.Start,
+                SearchEnd = request.End,
+                SelectedSlotStart = request.Start,
+                SelectedSlotEnd = request.End,
+                Status = "scheduled",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
             _context.Meetings.Add(meeting);
 
-            _context.MeetingParticipants.Add(new MeetingParticipant
+            var now = DateTime.UtcNow;
+            foreach (var (userId, user) in existingUsers)
             {
-                Id = Guid.NewGuid(),
-                MeetingId = meeting.Id,
-                UserId = creatorId,
-                Status = "accepted",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            });
-
-            var emails = request.ParticipantEmails
-                .Where(e => !string.IsNullOrWhiteSpace(e))
-                .Select(e => e.ToLower().Trim())
-                .Distinct()
-                .ToList();
-
-            if (emails.Any())
-            {
-                var users = await _context.Users
-                    .Where(u => emails.Contains(u.Email) && u.Id != creatorId)
-                    .ToListAsync();
-
-                foreach (var u in users)
+                var isCreator = userId == creatorId;
+                _context.MeetingParticipants.Add(new MeetingParticipant
                 {
-                    _context.MeetingParticipants.Add(new MeetingParticipant
-                    {
-                        Id = Guid.NewGuid(),
-                        MeetingId = meeting.Id,
-                        UserId = u.Id,
-                        Status = "pending",
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    });
+                    Id = Guid.NewGuid(),
+                    MeetingId = meeting.Id,
+                    UserId = userId,
+                    Status = isCreator ? "accepted" : "pending",
+                    CreatedAt = now,
+                    UpdatedAt = now
+                });
 
+                if (!isCreator)
+                {
                     _context.Notifications.Add(new Notification
                     {
                         Id = Guid.NewGuid(),
-                        UserId = u.Id,
+                        UserId = userId,
                         Type = "meeting_invite",
                         Title = "Приглашение на встречу",
                         Message = $"Вас пригласили на встречу: {meeting.Title}",
                         IsRead = false,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        CreatedAt = now,
+                        UpdatedAt = now
                     });
                 }
             }
@@ -136,36 +152,40 @@ namespace Syncora.Services
             return true;
         }
 
-        public async Task<MeetingDto?> ConfirmSlotAsync(
-            Guid meetingId, Guid userId, DateTime slotStart, DateTime slotEnd)
+        public async Task<MeetingDto?> UpdateAsync(
+            Guid meetingId, Guid userId, string title, DateTime start, DateTime end)
         {
             var meeting = await _context.Meetings
                 .FirstOrDefaultAsync(m => m.Id == meetingId);
 
             if (meeting == null || meeting.CreatorId != userId) return null;
 
-            if (slotEnd <= slotStart)
-                throw new InvalidOperationException("Дата окончания должна быть позже даты начала");
+            if (end <= start)
+                throw new InvalidOperationException("Время окончания встречи должно быть позже начала");
 
-            meeting.SelectedSlotStart = slotStart;
-            meeting.SelectedSlotEnd = slotEnd;
-            meeting.Status = "scheduled";
+            var oldStart = meeting.SelectedSlotStart;
+            var oldEnd = meeting.SelectedSlotEnd;
+
+            meeting.Title = title;
+            meeting.SelectedSlotStart = start;
+            meeting.SelectedSlotEnd = end;
+            meeting.DurationMinutes = (int)(end - start).TotalMinutes;
             meeting.UpdatedAt = DateTime.UtcNow;
 
-            var participants = await _context.MeetingParticipants
-                .Where(p => p.MeetingId == meetingId && p.UserId != userId)
+            var participantIds = await _context.MeetingParticipants
+                .Where(p => p.MeetingId == meetingId)
                 .Select(p => p.UserId)
                 .ToListAsync();
 
-            foreach (var pid in participants)
+            foreach (var pid in participantIds.Where(pid => pid != userId))
             {
                 _context.Notifications.Add(new Notification
                 {
                     Id = Guid.NewGuid(),
                     UserId = pid,
-                    Type = "meeting_scheduled",
-                    Title = "Встреча назначена",
-                    Message = $"Встреча '{meeting.Title}' назначена на {slotStart:dd.MM.yyyy HH:mm}",
+                    Type = "meeting_updated",
+                    Title = "Встреча изменена",
+                    Message = $"Встреча '{title}' перенесена на {start:dd.MM.yyyy HH:mm}",
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
@@ -180,6 +200,26 @@ namespace Syncora.Services
         {
             var meeting = await _context.Meetings.FirstOrDefaultAsync(m => m.Id == meetingId);
             if (meeting == null || meeting.CreatorId != userId) return false;
+
+            var participantIds = await _context.MeetingParticipants
+                .Where(p => p.MeetingId == meetingId)
+                .Select(p => p.UserId)
+                .ToListAsync();
+
+            foreach (var pid in participantIds.Where(pid => pid != userId))
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = pid,
+                    Type = "meeting_cancelled",
+                    Title = "Встреча отменена",
+                    Message = $"Встреча '{meeting.Title}' отменена",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
 
             _context.Meetings.Remove(meeting);
             await _context.SaveChangesAsync();

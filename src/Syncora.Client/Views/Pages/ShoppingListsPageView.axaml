@@ -1,0 +1,416 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Syncora.Client.ViewModels.Pages"
+			 xmlns:shop="using:Syncora.Client.Models.Shopping"
+			 xmlns:conv="using:Syncora.Client.Converters"
+			 x:Class="Syncora.Client.Views.Pages.ShoppingListsPageView"
+			 x:Name="Root"
+			 x:DataType="vm:ShoppingListsPageViewModel">
+
+	<UserControl.Styles>
+		<Style Selector="TextBlock.pageTitle">
+			<Setter Property="FontSize" Value="22" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<Style Selector="Button.primaryBtn">
+			<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
+			<Setter Property="Foreground" Value="#FFFFFF" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="14,8" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Button.primaryBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
+		</Style>
+
+		<Style Selector="Button.secondaryBtn">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,6" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+		<Style Selector="Button.secondaryBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+		</Style>
+
+		<Style Selector="Button.dangerBtn">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Foreground" Value="#D32F2F" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Padding" Value="6" />
+			<Setter Property="Cursor" Value="Hand" />
+		</Style>
+
+		<Style Selector="TextBlock.sectionTitle">
+			<Setter Property="FontSize" Value="16" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<Style Selector="TextBlock.errorText">
+			<Setter Property="Foreground" Value="#D32F2F" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+		<Style Selector="TextBlock.successText">
+			<Setter Property="Foreground" Value="#2E7D32" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+
+		<Style Selector="TextBox.input">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,8" />
+		</Style>
+
+		<!-- Карточка списка -->
+		<Style Selector="Border.listCard">
+			<Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+			<Setter Property="CornerRadius" Value="12" />
+			<Setter Property="BoxShadow" Value="0 2 12 0 #14000000" />
+			<Setter Property="Padding" Value="14,12" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Margin" Value="0,4" />
+		</Style>
+		<Style Selector="Border.listCard.selected">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentPurple}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+
+		<!-- Строка товара -->
+		<Style Selector="Border.itemRow">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="8" />
+		</Style>
+		<Style Selector="Border.itemRow:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+		</Style>
+
+		<Style Selector="TextBlock.itemCompleted">
+			<Setter Property="Opacity" Value="0.5" />
+			<Setter Property="TextDecorations" Value="Strikethrough" />
+		</Style>
+	</UserControl.Styles>
+
+	<Grid Background="{DynamicResource WindowBackground}"
+		  RowDefinitions="Auto,Auto,*">
+
+		<!-- ═══════ Заголовок ═══════ -->
+		<Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
+			<TextBlock Classes="pageTitle" Text="Списки покупок" Grid.Column="0" />
+			<Button Grid.Column="2"
+					Classes="primaryBtn"
+					Content="+ Новый список"
+					Command="{Binding OpenCreateListCommand}" />
+		</Grid>
+
+		<!-- Сообщения -->
+		<StackPanel Grid.Row="1" Margin="0,0,0,8">
+			<TextBlock Classes="errorText" Text="{Binding ErrorMessage}"
+					   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+			<TextBlock Classes="successText" Text="{Binding SuccessMessage}"
+					   IsVisible="{Binding SuccessMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+
+		<!-- ═══════ Контент ═══════ -->
+		<Grid Grid.Row="2" ColumnDefinitions="280,16,*" ColumnSpacing="0">
+
+			<!-- Левая панель: списки -->
+			<ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+				<StackPanel Spacing="4">
+					<TextBlock Classes="sectionTitle" Text="Все списки" Margin="0,0,0,8" />
+
+					<ItemsControl ItemsSource="{Binding Lists}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="shop:ShoppingListDto">
+								<Border Classes="listCard">
+									<Button Background="Transparent"
+											BorderThickness="0"
+											Padding="0"
+											HorizontalAlignment="Stretch"
+											HorizontalContentAlignment="Left"
+											Command="{Binding #Root.((vm:ShoppingListsPageViewModel)DataContext).SelectListCommand}"
+											CommandParameter="{Binding}">
+										<StackPanel Spacing="2">
+											<TextBlock Text="{Binding Name}"
+													   FontWeight="SemiBold"
+													   FontSize="14"
+													   Foreground="{DynamicResource LabelPrimary}" />
+											<TextBlock FontSize="12"
+													   Foreground="{DynamicResource LabelSecondary}">
+												<Run Text="{Binding Items.Count, StringFormat='{}{0} товаров'}" />
+												<Run Text="{Binding IsShared, StringFormat=' • {0:Совместный;;Личный}'}" />
+											</TextBlock>
+										</StackPanel>
+									</Button>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</StackPanel>
+			</ScrollViewer>
+
+			<!-- Правая область: выбранный список -->
+			<ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+				<StackPanel Spacing="16">
+
+					<!-- Заголовок списка -->
+					<Grid ColumnDefinitions="*,Auto,Auto,Auto" IsVisible="{Binding SelectedList, Converter={x:Static conv:NotNullConverter.Instance}}">
+						<TextBlock Grid.Column="0"
+								   Text="{Binding SelectedList.Name}"
+								   FontSize="18"
+								   FontWeight="SemiBold"
+								   Foreground="{DynamicResource LabelPrimary}" />
+						<Button Grid.Column="1"
+								Classes="secondaryBtn"
+								Content="+ Участник"
+								Command="{Binding OpenAddMemberCommand}"
+								Margin="0,0,8,0" />
+						<Button Grid.Column="2"
+								Classes="secondaryBtn"
+								Content="+ Товар"
+								Command="{Binding OpenAddItemCommand}"
+								Margin="0,0,8,0" />
+						<Button Grid.Column="3"
+								Classes="dangerBtn"
+								Content="✕"
+								Command="{Binding DeleteListCommand}"
+								CommandParameter="{Binding SelectedList}" />
+					</Grid>
+
+					<!-- Товары -->
+					<ItemsControl ItemsSource="{Binding SelectedList.Items}"
+								  IsVisible="{Binding SelectedList, Converter={x:Static conv:NotNullConverter.Instance}}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="shop:ShoppingItemDto">
+								<Border Classes="itemRow">
+									<Grid ColumnDefinitions="Auto,*,Auto,Auto">
+										<CheckBox Grid.Column="0"
+												  IsChecked="{Binding IsCompleted}"
+												  Command="{Binding #Root.((vm:ShoppingListsPageViewModel)DataContext).ToggleItemCommand}"
+												  CommandParameter="{Binding}"
+												  VerticalAlignment="Center" />
+										<TextBlock Grid.Column="1"
+												   Text="{Binding Name}"
+												   FontSize="14"
+												   Foreground="{DynamicResource LabelPrimary}"
+												   VerticalAlignment="Center"
+												   Margin="8,0" />
+										<TextBlock Grid.Column="2"
+												   FontSize="13"
+												   Foreground="{DynamicResource LabelMuted}"
+												   VerticalAlignment="Center"
+												   Margin="0,0,8,0">
+											<Run Text="{Binding Quantity, StringFormat='{}{0} шт.'}" />
+										</TextBlock>
+										<Button Grid.Column="3"
+												Classes="dangerBtn"
+												Content="✕"
+												Command="{Binding #Root.((vm:ShoppingListsPageViewModel)DataContext).DeleteItemCommand}"
+												CommandParameter="{Binding}" />
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+					<!-- Участники -->
+					<StackPanel Spacing="4"
+								IsVisible="{Binding SelectedList, Converter={x:Static conv:NotNullConverter.Instance}}">
+						<TextBlock Classes="sectionTitle" Text="Участники" Margin="0,8,0,4" />
+						<ItemsControl ItemsSource="{Binding SelectedList.Members}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="shop:ShoppingListMemberDto">
+									<Border Classes="itemRow">
+										<Grid ColumnDefinitions="*,Auto">
+											<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+												<TextBlock Text="{Binding UserName}"
+														   FontWeight="Medium"
+														   FontSize="13"
+														   VerticalAlignment="Center" />
+												<TextBlock Text="{Binding Email}"
+														   FontSize="12"
+														   Foreground="{DynamicResource LabelMuted}"
+														   VerticalAlignment="Center" />
+											</StackPanel>
+											<Button Grid.Column="1"
+													Classes="dangerBtn"
+													Content="✕"
+													Command="{Binding #Root.((vm:ShoppingListsPageViewModel)DataContext).RemoveMemberCommand}"
+													CommandParameter="{Binding}" />
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+
+					<!-- Пустое состояние -->
+					<TextBlock Text="Выберите или создайте список покупок"
+							   FontSize="14"
+							   Foreground="{DynamicResource LabelMuted}"
+							   HorizontalAlignment="Center"
+							   Margin="0,48">
+						<TextBlock.IsVisible>
+							<Binding Path="SelectedList" Converter="{x:Static conv:NullConverter.Instance}" />
+						</TextBlock.IsVisible>
+					</TextBlock>
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+
+		<!-- ═══════ Модальные диалоги ═══════ -->
+
+		<!-- Создание списка -->
+		<Panel Background="#66000000"
+			   IsVisible="{Binding IsCreateListOpen}"
+			   ZIndex="100">
+			<Border Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					Padding="24"
+					Width="400"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					BoxShadow="0 8 32 0 #22000000">
+				<StackPanel Spacing="16">
+					<TextBlock Text="Новый список покупок"
+							   FontSize="18"
+							   FontWeight="SemiBold"
+							   Foreground="{DynamicResource LabelPrimary}" />
+
+					<StackPanel Spacing="4">
+						<TextBlock Text="Название" FontSize="12"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<TextBox Classes="input"
+								 Text="{Binding NewListName}"
+								 Watermark="Например: Продукты" />
+					</StackPanel>
+
+					<CheckBox Content="Совместный список"
+							  IsChecked="{Binding NewListIsShared}" />
+
+					<Grid ColumnDefinitions="*,*">
+						<Button Grid.Column="0"
+								Content="Отмена"
+								Command="{Binding CloseCreateListCommand}"
+								Margin="0,0,8,0"
+								Background="Transparent"
+								BorderBrush="{DynamicResource BorderSoft}"
+								BorderThickness="1"
+								CornerRadius="8"
+								Padding="0,8" />
+						<Button Grid.Column="1"
+								Classes="primaryBtn"
+								Content="Создать"
+								Command="{Binding CreateListCommand}" />
+					</Grid>
+				</StackPanel>
+			</Border>
+		</Panel>
+
+		<!-- Добавление товара -->
+		<Panel Background="#66000000"
+			   IsVisible="{Binding IsAddItemOpen}"
+			   ZIndex="100">
+			<Border Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					Padding="24"
+					Width="400"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					BoxShadow="0 8 32 0 #22000000">
+				<StackPanel Spacing="16">
+					<TextBlock Text="Добавить товар"
+							   FontSize="18"
+							   FontWeight="SemiBold"
+							   Foreground="{DynamicResource LabelPrimary}" />
+
+					<StackPanel Spacing="4">
+						<TextBlock Text="Название" FontSize="12"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<TextBox Classes="input"
+								 Text="{Binding NewItemName}"
+								 Watermark="Например: Молоко" />
+					</StackPanel>
+
+					<StackPanel Spacing="4">
+						<TextBlock Text="Количество" FontSize="12"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<TextBox Classes="input"
+								 Text="{Binding NewItemQuantity}"
+								 Watermark="Необязательно" />
+					</StackPanel>
+
+					<Grid ColumnDefinitions="*,*">
+						<Button Grid.Column="0"
+								Content="Отмена"
+								Command="{Binding CloseAddItemCommand}"
+								Margin="0,0,8,0"
+								Background="Transparent"
+								BorderBrush="{DynamicResource BorderSoft}"
+								BorderThickness="1"
+								CornerRadius="8"
+								Padding="0,8" />
+						<Button Grid.Column="1"
+								Classes="primaryBtn"
+								Content="Добавить"
+								Command="{Binding AddItemCommand}" />
+					</Grid>
+				</StackPanel>
+			</Border>
+		</Panel>
+
+		<!-- Добавление участника -->
+		<Panel Background="#66000000"
+			   IsVisible="{Binding IsAddMemberOpen}"
+			   ZIndex="100">
+			<Border Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					Padding="24"
+					Width="400"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					BoxShadow="0 8 32 0 #22000000">
+				<StackPanel Spacing="16">
+					<TextBlock Text="Добавить участника"
+							   FontSize="18"
+							   FontWeight="SemiBold"
+							   Foreground="{DynamicResource LabelPrimary}" />
+
+					<StackPanel Spacing="4">
+						<TextBlock Text="Email" FontSize="12"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<TextBox Classes="input"
+								 Text="{Binding NewMemberEmail}"
+								 Watermark="user@example.com" />
+					</StackPanel>
+
+					<Grid ColumnDefinitions="*,*">
+						<Button Grid.Column="0"
+								Content="Отмена"
+								Command="{Binding CloseAddMemberCommand}"
+								Margin="0,0,8,0"
+								Background="Transparent"
+								BorderBrush="{DynamicResource BorderSoft}"
+								BorderThickness="1"
+								CornerRadius="8"
+								Padding="0,8" />
+						<Button Grid.Column="1"
+								Classes="primaryBtn"
+								Content="Добавить"
+								Command="{Binding AddMemberCommand}" />
+					</Grid>
+				</StackPanel>
+			</Border>
+		</Panel>
+	</Grid>
+</UserControl>

@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Syncora.Client.Services;
 using Syncora.Client.ViewModels;
+using Syncora.Client.ViewModels.Pages;
 using Syncora.Client.Views;
 
 namespace Syncora.Client;
@@ -35,8 +36,27 @@ public partial class App : Application
             services.AddSingleton<AuthSessionStore>();
             services.AddSingleton<AuthService>();
             services.AddSingleton<UserProfileService>();
+            services.AddSingleton<CalendarService>();
+            services.AddSingleton<EventService>();
+            services.AddSingleton<MeetingService>();
+            services.AddSingleton<ShoppingService>();
+            services.AddSingleton<NotificationService>();
+
             services.AddTransient<AuthViewModel>();
-            services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<MainWindowViewModel>(sp =>
+                new MainWindowViewModel(
+                    sp.GetRequiredService<AuthViewModel>(),
+                    sp.GetRequiredService<AuthSessionStore>(),
+                    sp.GetRequiredService<ApiClient>(),
+                    sp));
+
+            // Page ViewModels
+            services.AddTransient<CalendarPageViewModel>();
+            services.AddTransient<MeetingsPageViewModel>();
+            services.AddTransient<ShoppingListsPageViewModel>();
+            services.AddTransient<PeoplePageViewModel>();
+            services.AddTransient<SettingsPageViewModel>();
+            services.AddTransient<ProfilePageViewModel>();
 
             var provider = services.BuildServiceProvider();
             Ioc.Default.ConfigureServices(provider);

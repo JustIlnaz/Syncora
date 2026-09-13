@@ -112,6 +112,19 @@ public class ApiClient
         return result ?? throw new ApiException(response.StatusCode, "Пустой ответ сервера");
     }
 
+    public async Task PutNoContentAsync(string url)
+    {
+        var response = await _httpClient.PutAsync(url, content: null);
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url)
+    {
+        var response = await _httpClient.SendAsync(new HttpRequestMessage(method, url));
+        await EnsureSuccessAsync(response);
+        return response;
+    }
+
     private static async Task EnsureSuccessAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)

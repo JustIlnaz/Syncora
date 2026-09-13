@@ -10,7 +10,7 @@ namespace Syncora.Services
     public class UserService
     {
         private static readonly string[] AllowedAvatarExtensions = [".jpg", ".jpeg", ".png", ".webp"];
-        private const long MaxAvatarBytes = 2 * 1024 * 1024;
+        private const long MaxAvatarBytes = 5 * 1024 * 1024;
 
         private readonly SyncoraDbContext _context;
         private readonly IWebHostEnvironment _environment;
@@ -54,7 +54,7 @@ namespace Syncora.Services
                 throw new InvalidOperationException("Файл аватара пустой.");
 
             if (file.Length > MaxAvatarBytes)
-                throw new InvalidOperationException("Размер аватара не должен превышать 2 МБ.");
+                throw new InvalidOperationException("Размер аватара не должен превышать 5 МБ.");
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!AllowedAvatarExtensions.Contains(extension))
@@ -69,7 +69,8 @@ namespace Syncora.Services
 
             var uploadsDir = GetAvatarsDirectory();
 
-            var fileName = $"{userId}{extension}";
+            // Уникальное имя файла, чтобы клиент не получал старый аватар из кэша
+            var fileName = $"{userId}-{Guid.NewGuid():N}{extension}";
             var physicalPath = Path.Combine(uploadsDir, fileName);
 
             await using (var stream = File.Create(physicalPath))
@@ -145,6 +146,25 @@ namespace Syncora.Services
                 .ToListAsync();
 
             return contacts.Select(MapToContactDto).ToList();
+        }
+
+        public async Task<List<UserSearchResultDto>> SearchUsersAsync(string query, Guid currentUserId)
+        {
+            var q = query.ToLower().Trim();
+            var users = await _context.Users
+                .Where(u => u.Id != currentUserId &&
+                    (u.Name.ToLower().Contains(q) || u.Email.ToLower().Contains(q)))
+                .OrderBy(u => u.Name)
+                .Take(20)
+                .ToListAsync();
+
+            return users.Select(u => new UserSearchResultDto
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Email = u.Email,
+                AvatarUrl = u.AvatarUrl
+            }).ToList();
         }
 
         public async Task<ContactDto> AddContactAsync(Guid userId, AddContactRequest request)

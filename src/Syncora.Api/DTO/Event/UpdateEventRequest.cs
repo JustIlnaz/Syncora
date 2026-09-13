@@ -9,6 +9,9 @@ namespace Syncora.DTO.Event
 
         public string? Description { get; set; }
 
+        [MaxLength(20)]
+        public string? Color { get; set; }
+
         public DateTime? StartAt { get; set; }
 
         public DateTime? EndAt { get; set; }
