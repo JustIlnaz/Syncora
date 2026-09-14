@@ -196,6 +196,19 @@ public class DayColumnView : UserControl
                 });
             }
 
+            // Принявшие встречу — только если блок достаточно высокий
+            if (ev.AcceptedParticipants.Count > 0 && ev.Height >= 48)
+            {
+                textStack.Children.Add(new TextBlock
+                {
+                    Text = ev.AcceptedParticipantsText,
+                    FontSize = 10,
+                    Foreground = new SolidColorBrush(Color.Parse("#2E7D32")),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    MaxLines = 1
+                });
+            }
+
             var block = new Border
             {
                 Width = Math.Max(colWidth - 4, 30),
@@ -212,6 +225,8 @@ public class DayColumnView : UserControl
             var tipText = ev.IsMeeting ? $"Встреча\n{ev.Title}" : ev.Title;
             if (ev.HasDescription)
                 tipText += $"\n{ev.Description}";
+            if (ev.AcceptedParticipants.Count > 0)
+                tipText += $"\nПриняли: {string.Join(", ", ev.AcceptedParticipants)}";
             ToolTip.SetTip(block, tipText);
 
             // Акцентная полоска слева

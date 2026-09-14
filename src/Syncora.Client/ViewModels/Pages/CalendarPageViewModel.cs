@@ -78,6 +78,20 @@ public partial class CalendarPageViewModel : ViewModelBase
     [ObservableProperty]
     private string selectedEventColor = "#8B70FB";
 
+    /// <summary>Имена участников встречи, принявших приглашение.</summary>
+    public bool HasAcceptedParticipants => EditAcceptedParticipants.Count > 0;
+
+    private List<string> editAcceptedParticipants = new();
+    public List<string> EditAcceptedParticipants
+    {
+        get => editAcceptedParticipants;
+        set
+        {
+            if (SetProperty(ref editAcceptedParticipants, value))
+                OnPropertyChanged(nameof(HasAcceptedParticipants));
+        }
+    }
+
     public ObservableCollection<CalendarDto> Calendars { get; } = new();
     public ObservableCollection<EventColorOptionViewModel> EventColors { get; } = new();
     public ObservableCollection<WeekDayColumnViewModel> Days { get; } = new();
@@ -259,6 +273,7 @@ public partial class CalendarPageViewModel : ViewModelBase
                         CreatorId = item.Evt.CreatorId,
                         IsCurrentUserCreator = item.Evt.CreatorId == _currentUserId,
                         Description = item.Evt.Description,
+                        AcceptedParticipants = item.Evt.AcceptedParticipants ?? new(),
                         Top = startMinutes / 60.0 * HourHeight,
                         Height = Math.Max((endMinutes - startMinutes) / 60.0 * HourHeight, 22),
                         Column = col,
@@ -349,6 +364,7 @@ public partial class CalendarPageViewModel : ViewModelBase
         EditingEventId = Guid.Empty;
         EditTitle = string.Empty;
         EditDescription = null;
+        EditAcceptedParticipants = new();
         SelectedEventColor = NormalizeColor(EditCalendar?.Color);
         EditDate = DateTime.Today;
         EditStartTime = new TimeSpan(10, 0, 0);
@@ -387,6 +403,7 @@ public partial class CalendarPageViewModel : ViewModelBase
             EditingEventId = evt.Id;
             EditTitle = evt.Title;
             EditDescription = evt.Description;
+            EditAcceptedParticipants = evt.AcceptedParticipants ?? new();
             SelectedEventColor = NormalizeColor(evt.Color ?? evt.CalendarColor);
 
             var (start, end) = ToLocalInterval(evt);
@@ -573,6 +590,11 @@ public partial class EventBlockViewModel : ObservableObject
     public bool IsMeeting => MeetingId.HasValue;
 
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+    /// <summary>Имена участников встречи, принявших приглашение.</summary>
+    public List<string> AcceptedParticipants { get; set; } = new();
+
+    public string AcceptedParticipantsText => "✓ " + string.Join(", ", AcceptedParticipants);
 
     [ObservableProperty]
     private double top;

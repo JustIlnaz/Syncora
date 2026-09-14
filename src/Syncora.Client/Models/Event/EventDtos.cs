@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Syncora.Client.Models.Event;
 
@@ -19,6 +20,9 @@ public class EventDto
     public string? Location { get; set; }
     public bool IsAllDay { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>Имена участников связанной встречи, принявших приглашение.</summary>
+    public List<string> AcceptedParticipants { get; set; } = new();
 }
 
 public class CreateEventRequest

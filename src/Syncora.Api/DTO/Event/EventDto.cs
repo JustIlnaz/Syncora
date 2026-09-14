@@ -18,6 +18,9 @@
         public bool IsAllDay { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        /// <summary>Имена участников связанной встречи, принявших приглашение.</summary>
+        public List<string> AcceptedParticipants { get; set; } = new();
+
         public RecurrenceDto? Recurrence { get; set; }
     }
 }

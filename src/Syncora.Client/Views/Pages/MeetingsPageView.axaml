@@ -40,6 +40,12 @@
 		<Style Selector="Button.secondaryBtn:pointerover">
 			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
 		</Style>
+		<Style Selector="Button.secondaryBtn.selected">
+			<Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentPurple}" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentPurpleDark}" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
 
 		<Style Selector="Button.dangerBtn">
 			<Setter Property="Background" Value="Transparent" />
@@ -93,6 +99,29 @@
 			<Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource AccentPurple}" />
 			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+
+		<!-- Чип участника встречи -->
+		<Style Selector="Border.participantChip">
+			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+			<Setter Property="CornerRadius" Value="12" />
+			<Setter Property="Padding" Value="8,4" />
+		</Style>
+		<Style Selector="Border.participantChip.accepted">
+			<Setter Property="Background" Value="#FFE6F4EA" />
+		</Style>
+		<Style Selector="Border.participantChip.declined">
+			<Setter Property="Background" Value="#FFFDECEA" />
+		</Style>
+		<Style Selector="TextBlock.participantChipText">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="{DynamicResource LabelSecondary}" />
+		</Style>
+		<Style Selector="Border.participantChip.accepted TextBlock">
+			<Setter Property="Foreground" Value="#2E7D32" />
+		</Style>
+		<Style Selector="Border.participantChip.declined TextBlock">
+			<Setter Property="Foreground" Value="#D32F2F" />
 		</Style>
 
 		<!-- Чекбокс участника -->
@@ -207,15 +236,12 @@
 											</ItemsControl.ItemsPanel>
 											<ItemsControl.ItemTemplate>
 												<DataTemplate x:DataType="meet:MeetingParticipantDto">
-													<Border Background="{DynamicResource AccentPurpleTint}"
-															CornerRadius="12"
-															Padding="8,4">
-														<TextBlock FontSize="12"
-																   Foreground="{DynamicResource AccentPurpleDark}">
+													<Border Classes="participantChip"
+															Classes.accepted="{Binding IsAccepted}"
+															Classes.declined="{Binding IsDeclined}">
+														<TextBlock Classes="participantChipText">
+															<Run Text="{Binding StatusIcon}" />
 															<Run Text="{Binding UserName}" />
-															<Run Text="(" />
-															<Run Text="{Binding StatusText}" />
-															<Run Text=")" />
 														</TextBlock>
 													</Border>
 												</DataTemplate>
@@ -320,7 +346,7 @@
 							</StackPanel>
 
 							<!-- Длительность -->
-							<StackPanel Spacing="4">
+							<StackPanel Spacing="6">
 								<TextBlock Text="Длительность"
 										   FontSize="12"
 										   Foreground="{DynamicResource LabelSecondary}" />
@@ -333,6 +359,7 @@
 									<ItemsControl.ItemTemplate>
 										<DataTemplate x:DataType="vm:DurationPreset">
 											<Button Classes="secondaryBtn"
+													Classes.selected="{Binding IsSelected}"
 													Content="{Binding Label}"
 													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).SelectDurationCommand}"
 													CommandParameter="{Binding}"
@@ -340,12 +367,30 @@
 										</DataTemplate>
 									</ItemsControl.ItemTemplate>
 								</ItemsControl>
-								<TextBlock FontSize="12"
-										   Foreground="{DynamicResource AccentPurpleDark}"
-										   FontWeight="Medium">
-									<Run Text="Выбрано: " />
-									<Run Text="{Binding SelectedDurationText}" />
-								</TextBlock>
+								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,2,0,0">
+									<TextBox Classes="input"
+											Text="{Binding CustomDurationMinutes}"
+											VerticalAlignment="Center"
+											Watermark="Своя длительность, минут" />
+									<Button Grid.Column="1"
+											Classes="secondaryBtn"
+											Content="Применить"
+											Padding="16,8"
+											VerticalAlignment="Stretch"
+											VerticalContentAlignment="Center"
+											Command="{Binding ApplyCustomDurationCommand}" />
+								</Grid>
+								<Border Background="{DynamicResource AccentPurpleTint}"
+										CornerRadius="8"
+										Padding="10,6"
+										HorizontalAlignment="Left">
+									<TextBlock FontSize="12"
+											   Foreground="{DynamicResource AccentPurpleDark}"
+											   FontWeight="Medium">
+										<Run Text="Выбрано: " />
+										<Run Text="{Binding SelectedDurationText}" />
+									</TextBlock>
+								</Border>
 							</StackPanel>
 
 							<!-- Период поиска -->

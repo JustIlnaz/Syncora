@@ -18,6 +18,10 @@
 			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
 		</Style>
 
+		<Style Selector="TextBlock.restDay">
+			<Setter Property="Foreground" Value="{DynamicResource LabelMuted}" />
+		</Style>
+
 		<Style Selector="Button.primaryBtn">
 			<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
 			<Setter Property="Foreground" Value="#FFFFFF" />
@@ -189,13 +193,14 @@
 						<ItemsControl ItemsSource="{Binding WorkingHours}">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate x:DataType="vm:WorkingHoursItemViewModel">
-									<Grid ColumnDefinitions="120,Auto,8,Auto,8,Auto"
+									<Grid ColumnDefinitions="120,Auto,8,*,16,*"
 										  Margin="0,4">
 										<TextBlock Grid.Column="0"
 												   Text="{Binding DayName}"
 												   FontSize="13"
 												   Foreground="{DynamicResource LabelPrimary}"
-												   VerticalAlignment="Center" />
+												   VerticalAlignment="Center"
+												   Classes.restDay="{Binding !IsWorkingDay}" />
 
 										<CheckBox Grid.Column="1"
 												  IsChecked="{Binding IsWorkingDay}"
@@ -203,7 +208,7 @@
 
 										<TimePicker Grid.Column="3"
 													SelectedTime="{Binding StartTime}"
-													Width="100" />
+													IsEnabled="{Binding IsWorkingDay}" />
 
 										<TextBlock Grid.Column="4"
 												   Text="—"
@@ -212,7 +217,7 @@
 
 										<TimePicker Grid.Column="5"
 													SelectedTime="{Binding EndTime}"
-													Width="100" />
+													IsEnabled="{Binding IsWorkingDay}" />
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>

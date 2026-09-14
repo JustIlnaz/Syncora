@@ -30,7 +30,8 @@ namespace Syncora.Services
                 .OrderBy(e => e.StartAt)
                 .ToListAsync();
 
-            return events.Select(MapToDto).ToList();
+            var acceptedNames = await GetAcceptedParticipantNamesAsync(events);
+            return events.Select(e => MapToDto(e, acceptedNames)).ToList();
         }
 
         public async Task<EventDto?> GetByIdAsync(Guid eventId, Guid userId)
@@ -49,7 +50,28 @@ namespace Syncora.Services
 
             if (!hasAccess) return null;
 
-            return MapToDto(ev);
+            var acceptedNames = await GetAcceptedParticipantNamesAsync(new List<Event> { ev });
+            return MapToDto(ev, acceptedNames);
+        }
+
+        /// <summary>Имена участников встреч (accepted), сгруппированные по MeetingId.</summary>
+        private async Task<Dictionary<Guid, List<string>>> GetAcceptedParticipantNamesAsync(List<Event> events)
+        {
+            var meetingIds = events.Where(e => e.MeetingId.HasValue)
+                .Select(e => e.MeetingId!.Value).Distinct().ToList();
+
+            var result = new Dictionary<Guid, List<string>>();
+            if (meetingIds.Count == 0) return result;
+
+            var names = await _context.MeetingParticipants
+                .Where(p => meetingIds.Contains(p.MeetingId) && p.Status == "accepted")
+                .Select(p => new { p.MeetingId, Name = p.User != null ? p.User.Name : string.Empty })
+                .ToListAsync();
+
+            foreach (var group in names.GroupBy(n => n.MeetingId))
+                result[group.Key] = group.Select(n => n.Name).Where(n => n.Length > 0).ToList();
+
+            return result;
         }
 
         public async Task<EventDto> CreateAsync(CreateEventRequest request, Guid userId)
@@ -148,7 +170,7 @@ namespace Syncora.Services
             return true;
         }
 
-        private static EventDto MapToDto(Event e)
+        private static EventDto MapToDto(Event e, Dictionary<Guid, List<string>>? acceptedNames = null)
         {
             return new EventDto
             {
@@ -167,6 +189,11 @@ namespace Syncora.Services
                 Location = e.Location,
                 IsAllDay = e.IsAllDay,
                 CreatedAt = e.CreatedAt,
+                AcceptedParticipants = acceptedNames != null
+                    && e.MeetingId.HasValue
+                    && acceptedNames.TryGetValue(e.MeetingId.Value, out var names)
+                        ? names
+                        : new List<string>(),
                 Recurrence = e.Recurrence == null ? null : new RecurrenceDto
                 {
                     Id = e.Recurrence.Id,

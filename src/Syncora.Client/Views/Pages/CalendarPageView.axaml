@@ -435,6 +435,38 @@
 								<TimePicker SelectedTime="{Binding EditEndTime}"
 											HorizontalAlignment="Stretch" />
 							</StackPanel>
+
+							<!-- Принявшие встречу -->
+							<StackPanel Spacing="6"
+										IsVisible="{Binding HasAcceptedParticipants}">
+								<TextBlock FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}">
+									<Run Text="Приняли участие (" />
+									<Run Text="{Binding EditAcceptedParticipants.Count}" />
+									<Run Text=")" />
+								</TextBlock>
+								<ItemsControl ItemsSource="{Binding EditAcceptedParticipants}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<WrapPanel Orientation="Horizontal" />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="sys:String">
+											<Border Background="{DynamicResource AccentPurpleTint}"
+													CornerRadius="12"
+													Padding="8,4"
+													Margin="0,0,6,6">
+												<TextBlock FontSize="12"
+														   Foreground="{DynamicResource AccentPurpleDark}">
+													<Run Text="✓ " />
+													<Run Text="{Binding}" />
+												</TextBlock>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
 						</StackPanel>
 					</ScrollViewer>
 

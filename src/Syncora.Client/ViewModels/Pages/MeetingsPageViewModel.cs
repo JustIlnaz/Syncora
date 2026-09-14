@@ -101,11 +101,29 @@ public partial class MeetingsPageViewModel : ViewModelBase,
     [ObservableProperty]
     private ObservableCollection<ParticipantItemViewModel> selectedParticipants = new();
 
-    [ObservableProperty]
-    private int selectedDurationMinutes = 60;
+    public string SelectedDurationText => FormatDuration(SelectedDurationMinutes);
 
-    [ObservableProperty]
-    private string selectedDurationText = "1 час";
+    private int selectedDurationMinutes = 60;
+    public int SelectedDurationMinutes
+    {
+        get => selectedDurationMinutes;
+        set
+        {
+            if (SetProperty(ref selectedDurationMinutes, value))
+            {
+                OnPropertyChanged(nameof(SelectedDurationText));
+                foreach (var preset in DurationPresets)
+                    preset.IsSelected = preset.Minutes == value;
+            }
+        }
+    }
+
+    private string customDurationMinutes = string.Empty;
+    public string CustomDurationMinutes
+    {
+        get => customDurationMinutes;
+        set => SetProperty(ref customDurationMinutes, value);
+    }
 
     [ObservableProperty]
     private DateTime? searchDateFrom = DateTime.Today;
@@ -128,10 +146,10 @@ public partial class MeetingsPageViewModel : ViewModelBase,
     // Пресеты длительности (ТЗ §9.2)
     public List<DurationPreset> DurationPresets { get; } = new()
     {
-        new(15, "15 минут"),
-        new(30, "30 минут"),
-        new(45, "45 минут"),
-        new(60, "1 час"),
+        new(15, "15 мин"),
+        new(30, "30 мин"),
+        new(45, "45 мин"),
+        new(60, "1 час", true),
         new(90, "1,5 часа"),
         new(120, "2 часа"),
         new(180, "3 часа"),
@@ -248,12 +266,35 @@ public partial class MeetingsPageViewModel : ViewModelBase,
     {
         if (preset == null) return;
         SelectedDurationMinutes = preset.Minutes;
-        SelectedDurationText = preset.Label;
+    }
+
+    [RelayCommand]
+    private void ApplyCustomDuration()
+    {
+        if (!TryGetCustomDuration(out var minutes))
+        {
+            ErrorMessage = "Введите целое число минут от 15 до 1440.";
+            return;
+        }
+
+        SelectedDurationMinutes = minutes;
+        ErrorMessage = string.Empty;
     }
 
     [RelayCommand]
     private async Task SearchSlotsAsync()
     {
+        if (!TryGetCustomDuration(out var customMinutes) && !string.IsNullOrWhiteSpace(CustomDurationMinutes))
+        {
+            ErrorMessage = "Введите целое число минут от 15 до 1440.";
+            return;
+        }
+
+        if (customMinutes > 0)
+        {
+            SelectedDurationMinutes = customMinutes;
+        }
+
         if (SelectedParticipants.Count < 1)
         {
             ErrorMessage = "Выберите хотя бы одного участника (кроме себя).";
@@ -319,6 +360,27 @@ public partial class MeetingsPageViewModel : ViewModelBase,
         catch (ApiException ex) { ErrorMessage = ex.Message; }
         catch { ErrorMessage = "Ошибка поиска. Проверьте подключение."; }
         finally { IsSearching = false; }
+    }
+
+    private bool TryGetCustomDuration(out int minutes)
+    {
+        return int.TryParse(CustomDurationMinutes, NumberStyles.Integer, CultureInfo.InvariantCulture, out minutes)
+            && minutes is >= 15 and <= 1440;
+    }
+
+    private static string FormatDuration(int minutes)
+    {
+        if (minutes % 60 == 0)
+        {
+            var hours = minutes / 60;
+            var word = hours % 100 is >= 11 and <= 14 ? "часов"
+                : hours % 10 == 1 ? "час"
+                : hours % 10 is >= 2 and <= 4 ? "часа"
+                : "часов";
+            return $"{hours} {word}";
+        }
+
+        return $"{minutes} мин";
     }
 
     [RelayCommand]
@@ -504,4 +566,23 @@ public partial class MeetingSlotViewModel : ObservableObject
     private bool isSelected;
 }
 
-public record DurationPreset(int Minutes, string Label);
+public class DurationPreset : ObservableObject
+{
+    private bool _isSelected;
+
+    public DurationPreset(int minutes, string label, bool isSelected = false)
+    {
+        Minutes = minutes;
+        Label = label;
+        _isSelected = isSelected;
+    }
+
+    public int Minutes { get; }
+    public string Label { get; }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+}

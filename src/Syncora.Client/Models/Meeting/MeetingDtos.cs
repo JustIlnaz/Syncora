@@ -39,6 +39,16 @@ public class MeetingParticipantDto
         "declined" => "Отклонил",
         _ => Status ?? string.Empty
     };
+
+    public bool IsAccepted => Status == "accepted";
+    public bool IsDeclined => Status == "declined";
+
+    public string StatusIcon => Status switch
+    {
+        "accepted" => "✓ ",
+        "declined" => "✕ ",
+        _ => "⏳ "
+    };
 }
 
 public class MeetingSearchRequest
