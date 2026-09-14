@@ -159,15 +159,26 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var context = services.GetRequiredService<SyncoraDbContext>();
+
     try
     {
-        var context = services.GetRequiredService<SyncoraDbContext>();
         await context.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error while applying EF migrations.");
+    }
+
+    // Always patch missing columns even if a migration failed previously.
+    try
+    {
+        await DbInitializer.EnsureSchemaAsync(context);
         await DbInitializer.InitializeAsync(context);
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Error while initializing database.");
     }
 }

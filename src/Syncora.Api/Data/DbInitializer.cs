@@ -359,10 +359,38 @@ namespace Syncora.Data
             await context.SaveChangesAsync();
         }
 
-        private static async Task EnsureSchemaAsync(SyncoraDbContext context)
+        /// <summary>
+        /// Safety net when EF migrations fail or were only partially applied.
+        /// Keeps PascalCase quoted names so they match Npgsql/EF column mapping.
+        /// </summary>
+        public static async Task EnsureSchemaAsync(SyncoraDbContext context)
         {
             await context.Database.ExecuteSqlRawAsync(
-                "ALTER TABLE events ADD COLUMN IF NOT EXISTS \"Color\" character varying(20);");
+                """ALTER TABLE events ADD COLUMN IF NOT EXISTS "Color" character varying(20);""");
+
+            await context.Database.ExecuteSqlRawAsync(
+                """ALTER TABLE events ADD COLUMN IF NOT EXISTS "MeetingId" uuid;""");
+
+            await context.Database.ExecuteSqlRawAsync(
+                """ALTER TABLE meetings ADD COLUMN IF NOT EXISTS "Description" text;""");
+
+            await context.Database.ExecuteSqlRawAsync(
+                """CREATE INDEX IF NOT EXISTS "IX_events_MeetingId" ON events ("MeetingId");""");
+
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM pg_constraint WHERE conname = 'FK_events_meetings_MeetingId'
+                    ) THEN
+                        ALTER TABLE events
+                            ADD CONSTRAINT "FK_events_meetings_MeetingId"
+                            FOREIGN KEY ("MeetingId") REFERENCES meetings ("Id")
+                            ON DELETE SET NULL;
+                    END IF;
+                END $$;
+                """);
         }
     }
 }

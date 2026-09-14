@@ -11,41 +11,36 @@ namespace Syncora.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Color",
-                table: "calendar_members");
+            // calendar_members never had Color — do not drop it (that broke MigrateAsync).
+            // Color may already exist from AddEventColor / EnsureSchema; add only if missing via raw SQL.
+            migrationBuilder.Sql(
+                """ALTER TABLE meetings ADD COLUMN IF NOT EXISTS "Description" text;""");
 
-            migrationBuilder.AddColumn<string>(
-                name: "Description",
-                table: "meetings",
-                type: "text",
-                nullable: true);
+            migrationBuilder.Sql(
+                """ALTER TABLE events ADD COLUMN IF NOT EXISTS "Color" character varying(20);""");
 
-            migrationBuilder.AddColumn<string>(
-                name: "Color",
-                table: "events",
-                type: "character varying(20)",
-                maxLength: 20,
-                nullable: true);
+            migrationBuilder.Sql(
+                """ALTER TABLE events ADD COLUMN IF NOT EXISTS "MeetingId" uuid;""");
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "MeetingId",
-                table: "events",
-                type: "uuid",
-                nullable: true);
+            migrationBuilder.Sql(
+                """
+                CREATE INDEX IF NOT EXISTS "IX_events_MeetingId" ON events ("MeetingId");
+                """);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_events_MeetingId",
-                table: "events",
-                column: "MeetingId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_events_meetings_MeetingId",
-                table: "events",
-                column: "MeetingId",
-                principalTable: "meetings",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+            migrationBuilder.Sql(
+                """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM pg_constraint WHERE conname = 'FK_events_meetings_MeetingId'
+                    ) THEN
+                        ALTER TABLE events
+                            ADD CONSTRAINT "FK_events_meetings_MeetingId"
+                            FOREIGN KEY ("MeetingId") REFERENCES meetings ("Id")
+                            ON DELETE SET NULL;
+                    END IF;
+                END $$;
+                """);
         }
 
         /// <inheritdoc />
@@ -70,13 +65,6 @@ namespace Syncora.Migrations
             migrationBuilder.DropColumn(
                 name: "MeetingId",
                 table: "events");
-
-            migrationBuilder.AddColumn<string>(
-                name: "Color",
-                table: "calendar_members",
-                type: "character varying(20)",
-                maxLength: 20,
-                nullable: true);
         }
     }
 }
