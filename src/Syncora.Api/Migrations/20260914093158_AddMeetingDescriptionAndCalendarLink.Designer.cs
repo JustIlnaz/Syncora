@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Syncora.Data;
@@ -11,9 +12,11 @@ using Syncora.Data;
 namespace Syncora.Migrations
 {
     [DbContext(typeof(SyncoraDbContext))]
-    partial class SyncoraDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260914093158_AddMeetingDescriptionAndCalendarLink")]
+    partial class AddMeetingDescriptionAndCalendarLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -13,6 +13,8 @@ namespace Syncora.Models
         [MaxLength(200)]
         public string Title { get; set; } = string.Empty;
 
+        public string? Description { get; set; }
+
         public int? DurationMinutes { get; set; }
 
         public DateTime? SearchStart { get; set; }

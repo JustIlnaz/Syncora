@@ -13,6 +13,8 @@ namespace Syncora.DTO.Meeting
         [MaxLength(200)]
         public string Title { get; set; } = string.Empty;
 
+        public string? Description { get; set; }
+
         [Required]
         [MinLength(1, ErrorMessage = "Укажите хотя бы одного участника")]
         public List<Guid> ParticipantIds { get; set; } = new();

@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Syncora.Client.Messages;
 using Syncora.Client.Models.Calendar;
 using Syncora.Client.Models.Event;
 using Syncora.Client.Services;
@@ -16,10 +18,13 @@ public partial class CalendarPageViewModel : ViewModelBase
 {
     private readonly CalendarService _calendarService;
     private readonly EventService _eventService;
+    private readonly UserProfileService _userProfileService;
 
     private const int DayStartHour = 7;
     private const int DayEndHour = 22;
     private const double HourHeight = 64.0;
+
+    private Guid _currentUserId;
 
     [ObservableProperty]
     private DateTime currentWeekStart;
@@ -78,10 +83,14 @@ public partial class CalendarPageViewModel : ViewModelBase
     public ObservableCollection<WeekDayColumnViewModel> Days { get; } = new();
     public ObservableCollection<string> HourLabels { get; } = new();
 
-    public CalendarPageViewModel(CalendarService calendarService, EventService eventService)
+    public CalendarPageViewModel(
+        CalendarService calendarService,
+        EventService eventService,
+        UserProfileService userProfileService)
     {
         _calendarService = calendarService;
         _eventService = eventService;
+        _userProfileService = userProfileService;
 
         var today = DateTime.Today;
         int diff = ((int)today.DayOfWeek + 6) % 7; // понедельник = первый день
@@ -96,6 +105,16 @@ public partial class CalendarPageViewModel : ViewModelBase
         _ = LoadAsync();
     }
 
+    private async Task LoadCurrentUserAsync()
+    {
+        try
+        {
+            var profile = await _userProfileService.GetProfileAsync();
+            _currentUserId = profile.Id;
+        }
+        catch { /* права на редактирование просто не будут выставлены */ }
+    }
+
     [RelayCommand]
     private async Task LoadAsync()
     {
@@ -104,6 +123,7 @@ public partial class CalendarPageViewModel : ViewModelBase
 
         try
         {
+            await LoadCurrentUserAsync();
             await LoadCalendarsAsync();
             await LoadWeekEventsAsync();
         }
@@ -235,6 +255,10 @@ public partial class CalendarPageViewModel : ViewModelBase
                         CalendarName = item.Evt.CalendarName,
                         TimeText = $"{item.Start:HH:mm} – {item.End:HH:mm}",
                         ColorHex = NormalizeColor(item.Evt.Color ?? item.Evt.CalendarColor),
+                        MeetingId = item.Evt.MeetingId,
+                        CreatorId = item.Evt.CreatorId,
+                        IsCurrentUserCreator = item.Evt.CreatorId == _currentUserId,
+                        Description = item.Evt.Description,
                         Top = startMinutes / 60.0 * HourHeight,
                         Height = Math.Max((endMinutes - startMinutes) / 60.0 * HourHeight, 22),
                         Column = col,
@@ -340,6 +364,13 @@ public partial class CalendarPageViewModel : ViewModelBase
     {
         if (block == null)
             return;
+
+        // Событие-встреча: открываем редактор встречи (доступен создателю)
+        if (block.MeetingId.HasValue)
+        {
+            WeakReferenceMessenger.Default.Send(new OpenMeetingEditMessage(block.MeetingId.Value));
+            return;
+        }
 
         OpenEditEditorById(block.Id);
     }
@@ -528,6 +559,20 @@ public partial class EventBlockViewModel : ObservableObject
     public string CalendarName { get; set; } = string.Empty;
     public string TimeText { get; set; } = string.Empty;
     public string ColorHex { get; set; } = "#8B70FB";
+
+    /// <summary>Если задано — событие является событием-встречей.</summary>
+    public Guid? MeetingId { get; set; }
+
+    public Guid CreatorId { get; set; }
+
+    /// <summary>Текущий пользователь — создатель события/встречи (может редактировать).</summary>
+    public bool IsCurrentUserCreator { get; set; }
+
+    public string? Description { get; set; }
+
+    public bool IsMeeting => MeetingId.HasValue;
+
+    public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
 
     [ObservableProperty]
     private double top;

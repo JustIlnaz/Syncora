@@ -7,6 +7,7 @@
         public string CalendarName { get; set; } = string.Empty;
         public string? CalendarColor { get; set; }
         public Guid CreatorId { get; set; }
+        public Guid? MeetingId { get; set; }
         public string CreatorName { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }

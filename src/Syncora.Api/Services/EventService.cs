@@ -157,6 +157,7 @@ namespace Syncora.Services
                 CalendarName = e.Calendar?.Name ?? "",
                 CalendarColor = e.Calendar?.Color,
                 CreatorId = e.CreatorId,
+                MeetingId = e.MeetingId,
                 CreatorName = e.Creator?.Name ?? "",
                 Title = e.Title,
                 Description = e.Description,

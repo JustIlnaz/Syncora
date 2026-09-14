@@ -11,6 +11,11 @@ namespace Syncora.Data.Configurations
             builder.ToTable("events");
             builder.HasKey(e => e.Id);
 
+            builder.HasOne(e => e.Meeting)
+                   .WithMany()
+                   .HasForeignKey(e => e.MeetingId)
+                   .OnDelete(DeleteBehavior.SetNull);
+
             builder.Property(e => e.Title).HasMaxLength(200).IsRequired();
             builder.Property(e => e.Description);
             builder.Property(e => e.Color).HasMaxLength(20);

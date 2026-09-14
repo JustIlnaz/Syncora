@@ -99,7 +99,8 @@ namespace Syncora.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
-                var result = await _meetingService.UpdateAsync(id, CurrentUserId, request.Title, request.Start, request.End);
+                var result = await _meetingService.UpdateAsync(
+                    id, CurrentUserId, request.Title, request.Description, request.Start, request.End);
                 if (result == null) return NotFound(ApiError.Body("MEETING_NOT_FOUND", "Встреча не найдена или нет прав"));
                 return Ok(result);
             }

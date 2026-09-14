@@ -152,6 +152,50 @@ public class DayColumnView : UserControl
             var brush = TryBrush(ev.ColorHex, 0.25);
             var accent = TryBrush(ev.ColorHex, 1.0);
 
+            var textStack = new StackPanel { Spacing = 1 };
+
+            // Заголовок: для встреч добавляем маркер участников
+            var titlePanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+            if (ev.IsMeeting)
+            {
+                titlePanel.Children.Add(new TextBlock
+                {
+                    Text = "\uD83D\uDC65", // 👥
+                    FontSize = 10,
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+            }
+            titlePanel.Children.Add(new TextBlock
+            {
+                Text = ev.Title,
+                FontSize = 12,
+                FontWeight = FontWeight.SemiBold,
+                Foreground = new SolidColorBrush(Color.Parse("#30264A")),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+            textStack.Children.Add(titlePanel);
+
+            textStack.Children.Add(new TextBlock
+            {
+                Text = ev.TimeText,
+                FontSize = 10,
+                Foreground = new SolidColorBrush(Color.Parse("#756D88"))
+            });
+
+            // Описание — только если блок достаточно высокий
+            if (ev.HasDescription && ev.Height >= 56)
+            {
+                textStack.Children.Add(new TextBlock
+                {
+                    Text = ev.Description,
+                    FontSize = 10,
+                    Foreground = new SolidColorBrush(Color.Parse("#9B94AB")),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    MaxLines = 2,
+                    TextWrapping = TextWrapping.Wrap
+                });
+            }
+
             var block = new Border
             {
                 Width = Math.Max(colWidth - 4, 30),
@@ -161,28 +205,14 @@ public class DayColumnView : UserControl
                 Background = brush,
                 ClipToBounds = true,
                 Cursor = new Cursor(StandardCursorType.Hand),
-                Child = new StackPanel
-                {
-                    Spacing = 1,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = ev.Title,
-                            FontSize = 12,
-                            FontWeight = FontWeight.SemiBold,
-                            Foreground = new SolidColorBrush(Color.Parse("#30264A")),
-                            TextTrimming = TextTrimming.CharacterEllipsis
-                        },
-                        new TextBlock
-                        {
-                            Text = ev.TimeText,
-                            FontSize = 10,
-                            Foreground = new SolidColorBrush(Color.Parse("#756D88"))
-                        }
-                    }
-                }
+                Child = textStack
             };
+
+            // Подсказка: описание и тип
+            var tipText = ev.IsMeeting ? $"Встреча\n{ev.Title}" : ev.Title;
+            if (ev.HasDescription)
+                tipText += $"\n{ev.Description}";
+            ToolTip.SetTip(block, tipText);
 
             // Акцентная полоска слева
             var stripe = new Border

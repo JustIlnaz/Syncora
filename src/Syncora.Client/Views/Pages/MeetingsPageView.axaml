@@ -2,9 +2,11 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:vm="using:Syncora.Client.ViewModels.Pages"
 			 xmlns:meet="using:Syncora.Client.Models.Meeting"
+			 xmlns:conv="using:Syncora.Client.Converters"
 			 x:Class="Syncora.Client.Views.Pages.MeetingsPageView"
 			 x:Name="Root"
 			 x:DataType="vm:MeetingsPageViewModel">
+	<!-- MeetingsPageView.axaml -->
 
 	<UserControl.Styles>
 		<Style Selector="TextBlock.pageTitle">
@@ -152,6 +154,12 @@
 												<Run Text=" — " />
 												<Run Text="{Binding SelectedSlotEnd, StringFormat='{}{0:HH:mm}'}" />
 											</TextBlock>
+											<TextBlock Foreground="{DynamicResource LabelSecondary}"
+													   FontSize="13"
+													   TextWrapping="Wrap"
+													   IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+												<Run Text="{Binding Description}" />
+											</TextBlock>
 											<TextBlock Foreground="{DynamicResource LabelMuted}"
 													   FontSize="12">
 												<Run Text="Создал: " />
@@ -163,16 +171,27 @@
 													Orientation="Horizontal"
 													Spacing="8"
 													VerticalAlignment="Top">
+											<StackPanel Orientation="Horizontal"
+														Spacing="8"
+														IsVisible="{Binding CanRespond}">
+												<Button Classes="secondaryBtn"
+														Content="Принять"
+														Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).AcceptMeetingCommand}"
+														CommandParameter="{Binding}" />
+												<Button Classes="secondaryBtn"
+														Content="Отклонить"
+														Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).DeclineMeetingCommand}"
+														CommandParameter="{Binding}" />
+											</StackPanel>
 											<Button Classes="secondaryBtn"
-													Content="Принять"
-													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).AcceptMeetingCommand}"
-													CommandParameter="{Binding}" />
-											<Button Classes="secondaryBtn"
-													Content="Отклонить"
-													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).DeclineMeetingCommand}"
+													Content="Редактировать"
+													IsVisible="{Binding IsCurrentUserCreator}"
+													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).OpenEditMeetingCommand}"
 													CommandParameter="{Binding}" />
 											<Button Classes="dangerBtn"
 													Content="✕"
+													IsVisible="{Binding IsCurrentUserCreator}"
+													ToolTip.Tip="Удалить встречу"
 													Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).DeleteMeetingCommand}"
 													CommandParameter="{Binding}" />
 										</StackPanel>
@@ -195,7 +214,7 @@
 																   Foreground="{DynamicResource AccentPurpleDark}">
 															<Run Text="{Binding UserName}" />
 															<Run Text="(" />
-															<Run Text="{Binding Status}" />
+															<Run Text="{Binding StatusText}" />
 															<Run Text=")" />
 														</TextBlock>
 													</Border>
@@ -255,6 +274,19 @@
 										 Watermark="Введите название встречи" />
 							</StackPanel>
 
+							<!-- Описание встречи -->
+							<StackPanel Spacing="4">
+								<TextBlock Text="Описание"
+										   FontSize="12"
+										   Foreground="{DynamicResource LabelSecondary}" />
+								<TextBox Classes="input"
+										 Text="{Binding SearchDescription}"
+										 AcceptsReturn="True"
+										 Height="72"
+										 TextWrapping="Wrap"
+										 Watermark="Детали встречи (необязательно)" />
+							</StackPanel>
+
 							<!-- Участники -->
 							<StackPanel Spacing="4">
 								<TextBlock FontSize="12"
@@ -269,8 +301,8 @@
 											<Border Classes="participantRow"
 													Classes.selected="{Binding IsSelected}">
 												<StackPanel Orientation="Horizontal" Spacing="8">
-													<CheckBox IsChecked="{Binding IsSelected}"
-															  Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).ToggleParticipantCommand}"
+															<CheckBox IsChecked="{Binding IsSelected, Mode=OneWay}"
+																	  Command="{Binding #Root.((vm:MeetingsPageViewModel)DataContext).ToggleParticipantCommand}"
 															  CommandParameter="{Binding}" />
 													<TextBlock VerticalAlignment="Center">
 														<Run Text="{Binding Name}"
@@ -419,5 +451,60 @@
 				</Grid>
 			</Border>
 		</Grid>
+
+		<!-- Редактирование встречи -->
+		<Panel Background="#66000000"
+			   IsVisible="{Binding IsEditMeetingOpen}"
+			   ZIndex="100">
+			<Border Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					Padding="24"
+					Width="400"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					BoxShadow="0 8 32 0 #22000000">
+				<StackPanel Spacing="16">
+					<TextBlock Text="Редактировать встречу"
+							   FontSize="18"
+							   FontWeight="SemiBold"
+							   Foreground="{DynamicResource LabelPrimary}" />
+
+					<StackPanel Spacing="4">
+						<TextBlock Text="Название" FontSize="12"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<TextBox Classes="input"
+								 Text="{Binding EditMeetingTitle}"
+								 Watermark="Название встречи" />
+					</StackPanel>
+
+					<StackPanel Spacing="4">
+						<TextBlock Text="Описание" FontSize="12"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<TextBox Classes="input"
+								 Text="{Binding EditMeetingDescription}"
+								 AcceptsReturn="True"
+								 Height="80"
+								 TextWrapping="Wrap"
+								 Watermark="Описание (необязательно)" />
+					</StackPanel>
+
+					<Grid ColumnDefinitions="*,*">
+						<Button Grid.Column="0"
+								Content="Отмена"
+								Command="{Binding CloseEditMeetingCommand}"
+								Margin="0,0,8,0"
+								Background="Transparent"
+								BorderBrush="{DynamicResource BorderSoft}"
+								BorderThickness="1"
+								CornerRadius="8"
+								Padding="0,8" />
+						<Button Grid.Column="1"
+								Classes="primaryBtn"
+								Content="Сохранить"
+								Command="{Binding SaveMeetingCommand}" />
+					</Grid>
+				</StackPanel>
+			</Border>
+		</Panel>
 	</Grid>
 </UserControl>

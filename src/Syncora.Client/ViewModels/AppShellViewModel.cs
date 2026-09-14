@@ -13,7 +13,8 @@ using System.Threading.Tasks;
 namespace Syncora.Client.ViewModels;
 
 public partial class AppShellViewModel : ViewModelBase,
-    IRecipient<ProfileUpdatedMessage>
+    IRecipient<ProfileUpdatedMessage>,
+    IRecipient<OpenMeetingEditMessage>
 {
     private readonly UserProfileService _profileService;
     private readonly AuthSessionStore _sessionStore;
@@ -80,7 +81,8 @@ public partial class AppShellViewModel : ViewModelBase,
         _sessionStore = sessionStore;
         _apiClient = apiClient;
 
-        WeakReferenceMessenger.Default.Register(this);
+        WeakReferenceMessenger.Default.Register<ProfileUpdatedMessage>(this);
+        WeakReferenceMessenger.Default.Register<OpenMeetingEditMessage>(this);
 
         NavigationItems.Add(new NavItemViewModel(AppSection.Calendar,
             "Календарь",
@@ -166,6 +168,18 @@ public partial class AppShellViewModel : ViewModelBase,
         _ = RefreshAvatarImageAsync();
     }
 
+    public void Receive(OpenMeetingEditMessage message)
+    {
+        // Переключаемся на страницу встреч; MeetingsPageViewModel получит то же сообщение и откроет редактор.
+        IsProfilePageOpen = false;
+        ActiveSection = AppSection.Meetings;
+        foreach (var item in NavigationItems)
+            item.IsActive = item.Section == AppSection.Meetings;
+
+        if (CurrentPage is not MeetingsPageViewModel)
+            CurrentPage = CreatePage(AppSection.Meetings);
+    }
+
     partial void OnIsSidebarCompactChanged(bool value)
     {
         SidebarWidth = value ? 72 : 240;
@@ -183,7 +197,8 @@ public partial class AppShellViewModel : ViewModelBase,
     {
         AppSection.Calendar => new CalendarPageViewModel(
             new CalendarService(_apiClient),
-            new EventService(_apiClient)),
+            new EventService(_apiClient),
+            _profileService),
         AppSection.Meetings => new MeetingsPageViewModel(
             new MeetingService(_apiClient),
             _profileService),

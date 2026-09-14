@@ -333,9 +333,9 @@
 										   Foreground="{DynamicResource LabelSecondary}" />
 								<TextBox Classes="editorInput"
 										 Text="{Binding EditDescription}"
-										 Watermark="Необязательно"
+										 Watermark="Детали события (необязательно)"
 										 AcceptsReturn="True"
-										 Height="60"
+										 Height="88"
 										 TextWrapping="Wrap" />
 							</StackPanel>
 

@@ -11,6 +11,8 @@ namespace Syncora.Models
         public Guid CalendarId { get; set; }
         public Guid CreatorId { get; set; }
 
+        public Guid? MeetingId { get; set; }
+
         [MaxLength(200)]
         public string Title { get; set; } = string.Empty;
 
@@ -37,6 +39,9 @@ namespace Syncora.Models
 
         [ForeignKey(nameof(CreatorId))]
         public User? Creator { get; set; }
+
+        [ForeignKey(nameof(MeetingId))]
+        public Meeting? Meeting { get; set; }
 
         [ForeignKey(nameof(RecurrenceId))]
         public Recurrence? Recurrence { get; set; }

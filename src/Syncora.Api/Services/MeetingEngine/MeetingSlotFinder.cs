@@ -138,8 +138,7 @@ namespace Syncora.Services.MeetingEngine
         }
 
         /// <summary>
-        /// Слот целиком внутри рабочего времени участника (с учётом перехода через полночь).
-        /// </summary>
+         /// </summary>
         private static bool WithinWorkingHours(
             IReadOnlyList<WorkingDay> days,
             DateTime slotStart,

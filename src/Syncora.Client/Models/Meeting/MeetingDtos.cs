@@ -9,6 +9,7 @@ public class MeetingDto
     public Guid CreatorId { get; set; }
     public string CreatorName { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public int? DurationMinutes { get; set; }
     public DateTime? SearchStart { get; set; }
     public DateTime? SearchEnd { get; set; }
@@ -17,6 +18,9 @@ public class MeetingDto
     public DateTime? SelectedSlotEnd { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<MeetingParticipantDto> Participants { get; set; } = new();
+
+    public bool IsCurrentUserCreator { get; set; }
+    public bool CanRespond { get; set; }
 }
 
 public class MeetingParticipantDto
@@ -27,6 +31,14 @@ public class MeetingParticipantDto
     public string Email { get; set; } = string.Empty;
     public string? AvatarUrl { get; set; }
     public string? Status { get; set; }
+
+    public string StatusText => Status switch
+    {
+        "pending" => "Ожидает",
+        "accepted" => "Принял",
+        "declined" => "Отклонил",
+        _ => Status ?? string.Empty
+    };
 }
 
 public class MeetingSearchRequest
@@ -51,6 +63,7 @@ public class MeetingSearchResponse
 public class CreateMeetingRequest
 {
     public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public List<Guid> ParticipantIds { get; set; } = new();
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
@@ -59,6 +72,7 @@ public class CreateMeetingRequest
 public class UpdateMeetingRequest
 {
     public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
 }

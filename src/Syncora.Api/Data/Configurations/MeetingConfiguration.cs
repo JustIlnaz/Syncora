@@ -14,6 +14,8 @@ namespace Syncora.Data.Configurations
             builder.Property(m => m.Title).HasMaxLength(200).IsRequired();
             builder.Property(m => m.Status).HasMaxLength(20);
 
+            builder.Property(m => m.Description);
+
             builder.Property(m => m.CreatedAt).IsRequired();
             builder.Property(m => m.UpdatedAt).IsRequired();
 

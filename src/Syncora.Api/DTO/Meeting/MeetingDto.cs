@@ -6,6 +6,7 @@
         public Guid CreatorId { get; set; }
         public string CreatorName { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
         public int? DurationMinutes { get; set; }
         public DateTime? SearchStart { get; set; }
         public DateTime? SearchEnd { get; set; }

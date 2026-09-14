@@ -56,6 +56,7 @@ namespace Syncora.Services
                 Id = Guid.NewGuid(),
                 CreatorId = creatorId,
                 Title = request.Title,
+                Description = request.Description,
                 DurationMinutes = (int)(request.End - request.Start).TotalMinutes,
                 SearchStart = request.Start,
                 SearchEnd = request.End,
@@ -146,14 +147,22 @@ namespace Syncora.Services
             participant.UpdatedAt = DateTime.UtcNow;
 
             if (participant.Meeting != null)
+            {
                 participant.Meeting.UpdatedAt = DateTime.UtcNow;
+
+                if (status == "accepted")
+                    await EnsureCalendarEventsAsync(participant.Meeting);
+                else
+                    await RemoveCalendarEventForUserAsync(participant.Meeting.Id, userId);
+            }
 
             await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<MeetingDto?> UpdateAsync(
-            Guid meetingId, Guid userId, string title, DateTime start, DateTime end)
+            Guid meetingId, Guid userId,
+            string title, string? description, DateTime start, DateTime end)
         {
             var meeting = await _context.Meetings
                 .FirstOrDefaultAsync(m => m.Id == meetingId);
@@ -167,10 +176,23 @@ namespace Syncora.Services
             var oldEnd = meeting.SelectedSlotEnd;
 
             meeting.Title = title;
+            meeting.Description = description;
             meeting.SelectedSlotStart = start;
             meeting.SelectedSlotEnd = end;
             meeting.DurationMinutes = (int)(end - start).TotalMinutes;
             meeting.UpdatedAt = DateTime.UtcNow;
+
+            var calendarEvents = await _context.Events
+                .Where(e => e.MeetingId == meetingId)
+                .ToListAsync();
+            foreach (var calendarEvent in calendarEvents)
+            {
+                calendarEvent.Title = title;
+                calendarEvent.Description = description;
+                calendarEvent.StartAt = start;
+                calendarEvent.EndAt = end;
+                calendarEvent.UpdatedAt = DateTime.UtcNow;
+            }
 
             var participantIds = await _context.MeetingParticipants
                 .Where(p => p.MeetingId == meetingId)
@@ -221,9 +243,71 @@ namespace Syncora.Services
                 });
             }
 
+            var calendarEvents = await _context.Events
+                .Where(e => e.MeetingId == meetingId)
+                .ToListAsync();
+            _context.Events.RemoveRange(calendarEvents);
             _context.Meetings.Remove(meeting);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        private async Task EnsureCalendarEventsAsync(Meeting meeting)
+        {
+            var participantIds = await _context.MeetingParticipants
+                .Where(p => p.MeetingId == meeting.Id)
+                .Select(p => p.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            foreach (var participantId in participantIds)
+            {
+                var calendar = await _context.Calendars
+                    .FirstOrDefaultAsync(c => c.OwnerId == participantId && c.Type == "personal");
+
+                if (calendar == null)
+                {
+                    calendar = new Calendar
+                    {
+                        Id = Guid.NewGuid(),
+                        OwnerId = participantId,
+                        Name = "Личный",
+                        Color = "#A78BFA",
+                        Type = "personal",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    _context.Calendars.Add(calendar);
+                }
+
+                var exists = await _context.Events
+                    .AnyAsync(e => e.MeetingId == meeting.Id && e.CalendarId == calendar.Id);
+                if (exists) continue;
+
+                _context.Events.Add(new Event
+                {
+                    Id = Guid.NewGuid(),
+                    CalendarId = calendar.Id,
+                    CreatorId = meeting.CreatorId,
+                    MeetingId = meeting.Id,
+                    Title = meeting.Title,
+                    Description = meeting.Description,
+                    Color = calendar.Color,
+                    StartAt = meeting.SelectedSlotStart!.Value,
+                    EndAt = meeting.SelectedSlotEnd!.Value,
+                    IsAllDay = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        private async Task RemoveCalendarEventForUserAsync(Guid meetingId, Guid userId)
+        {
+            var events = await _context.Events
+                .Where(e => e.MeetingId == meetingId && e.Calendar!.OwnerId == userId)
+                .ToListAsync();
+            _context.Events.RemoveRange(events);
         }
 
         private static MeetingDto MapToDto(Meeting m)
@@ -234,6 +318,7 @@ namespace Syncora.Services
                 CreatorId = m.CreatorId,
                 CreatorName = m.Creator?.Name ?? "",
                 Title = m.Title,
+                Description = m.Description,
                 DurationMinutes = m.DurationMinutes,
                 SearchStart = m.SearchStart,
                 SearchEnd = m.SearchEnd,
