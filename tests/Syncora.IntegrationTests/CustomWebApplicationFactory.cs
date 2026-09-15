@@ -74,7 +74,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 SecurityAlgorithms.HmacSha256Signature)
         };
 
-        var tokenHandler = new JwtTokenHandler();
+        var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }

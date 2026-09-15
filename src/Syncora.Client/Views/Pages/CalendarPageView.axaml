@@ -52,19 +52,7 @@
 			<Setter Property="Background" Value="{DynamicResource AccentPurpleLight}" />
 		</Style>
 
-		<!-- Primary кнопка "Создать событие" -->
-		<Style Selector="Button.primaryBtn">
-			<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
-			<Setter Property="Foreground" Value="#FFFFFF" />
-			<Setter Property="BorderThickness" Value="0" />
-			<Setter Property="CornerRadius" Value="8" />
-			<Setter Property="Padding" Value="14,8" />
-			<Setter Property="Cursor" Value="Hand" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-		</Style>
-		<Style Selector="Button.primaryBtn:pointerover">
-			<Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
-		</Style>
+		<!-- Primary/secondary/danger кнопки — глобальные стили, см. Styles/Buttons.axaml -->
 
 		<!-- Заголовки дней недели -->
 		<Style Selector="TextBlock.dayName">
@@ -190,11 +178,121 @@
 
 		<!-- ═══════ Основная область ═══════ -->
 		<Grid Grid.Row="2"
-			  ColumnDefinitions="*,Auto"
+			  ColumnDefinitions="260,*,Auto"
 			  ColumnSpacing="16">
 
-			<!-- Недельный календарь -->
+			<!-- ═══════ Левая панель: Мои календари ═══════ -->
 			<Border Grid.Column="0"
+					Background="{DynamicResource SurfaceBackground}"
+					CornerRadius="16"
+					BoxShadow="0 2 12 0 #14000000"
+					Padding="16">
+				<StackPanel Spacing="12">
+					<TextBlock Text="Мои календари"
+							   FontSize="16"
+							   FontWeight="SemiBold"
+							   Foreground="{DynamicResource LabelPrimary}" />
+
+					<ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400">
+						<ItemsControl ItemsSource="{Binding CalendarItems}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="vm:CalendarItemViewModel">
+									<Border Padding="8,6"
+											CornerRadius="8"
+											Margin="0,0,0,4">
+										<Grid ColumnDefinitions="Auto,*,Auto">
+											<CheckBox Grid.Column="0"
+													  IsChecked="{Binding IsVisible}"
+													  VerticalAlignment="Center"
+													  Margin="0,0,8,0">
+												<CheckBox.Content>
+													<Ellipse Width="12" Height="12"
+															 Fill="{Binding Color}" />
+												</CheckBox.Content>
+											</CheckBox>
+											<StackPanel Grid.Column="1" Spacing="1">
+												<Button Background="Transparent"
+														BorderThickness="0"
+														Padding="0"
+														Cursor="Hand"
+														HorizontalAlignment="Stretch"
+														HorizontalContentAlignment="Left"
+														Command="{Binding $parent[UserControl].((vm:CalendarPageViewModel)DataContext).SelectCalendarCommand}"
+														CommandParameter="{Binding}">
+													<StackPanel Spacing="1">
+														<TextBlock Text="{Binding Name}"
+																   FontSize="13"
+																   FontWeight="Medium"
+																   Foreground="{DynamicResource LabelPrimary}"
+																   TextTrimming="CharacterEllipsis" />
+														<TextBlock Text="{Binding TypeDisplayName}"
+																   FontSize="11"
+																   Foreground="{DynamicResource LabelMuted}" />
+													</StackPanel>
+												</Button>
+											</StackPanel>
+											<Button Grid.Column="2"
+													Content="⋯"
+													FontSize="14"
+													Padding="4,2"
+													Background="Transparent"
+													BorderThickness="0"
+													Foreground="{DynamicResource LabelSecondary}"
+													Cursor="Hand"
+													Command="{Binding $parent[UserControl].((vm:CalendarPageViewModel)DataContext).SelectCalendarCommand}"
+													CommandParameter="{Binding}"
+													IsVisible="{Binding IsOwner}" />
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</ScrollViewer>
+
+					<!-- Информация о выбранном календаре и управление им -->
+					<Border Background="{DynamicResource SurfaceSecondary}"
+							CornerRadius="8"
+							Padding="12"
+							IsVisible="{Binding SelectedCalendar, Converter={x:Static ObjectConverters.IsNotNull}}">
+						<StackPanel Spacing="6">
+							<StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+								<Ellipse Width="12" Height="12"
+										 Fill="{Binding SelectedCalendar.Color}"
+										 VerticalAlignment="Center" />
+								<TextBlock Text="{Binding SelectedCalendar.Name}"
+										   FontSize="14"
+										   FontWeight="SemiBold"
+										   Foreground="{DynamicResource LabelPrimary}"
+										   TextTrimming="CharacterEllipsis" />
+							</StackPanel>
+							<TextBlock Text="{Binding SelectedCalendar.TypeDisplayName}"
+									   FontSize="12"
+									   Foreground="{DynamicResource LabelSecondary}" />
+							<TextBlock Text="{Binding SelectedCalendar.Description}"
+									   FontSize="12"
+									   Foreground="{DynamicResource LabelMuted}"
+									   TextWrapping="Wrap"
+									   IsVisible="{Binding SelectedCalendar.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+							<TextBlock Text="{Binding SelectedCalendarMembersCountText}"
+									   FontSize="12"
+									   Foreground="{DynamicResource LabelMuted}"
+									   IsVisible="{Binding SelectedCalendarHasMembers}" />
+							<TextBlock Text="Личный календарь нельзя удалить"
+									   FontSize="11"
+									   Foreground="{DynamicResource LabelMuted}"
+									   FontStyle="Italic"
+									   IsVisible="{Binding IsSelectedCalendarPersonal}" />
+							<Button Content="Редактировать"
+									Classes="weekNav"
+									Command="{Binding OpenCalendarEditCommand}"
+									IsVisible="{Binding CanManageSelectedCalendar}" />
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</Border>
+
+			<!-- Недельный календарь -->
+			<Border Grid.Column="1"
 					Background="{DynamicResource SurfaceBackground}"
 					CornerRadius="16"
 					BoxShadow="0 2 12 0 #14000000"
@@ -297,7 +395,7 @@
 			</Border>
 
 			<!-- ═══════ Правая панель: редактор события ═══════ -->
-			<Border Grid.Column="1"
+			<Border Grid.Column="2"
 					Width="320"
 					Background="{DynamicResource SurfaceBackground}"
 					CornerRadius="16"
@@ -490,23 +588,14 @@
 								IsEnabled="{Binding !IsEditorBusy}"
 								HorizontalAlignment="Stretch" />
 						<Button Content="Отмена"
+								Classes="secondaryBtn"
 								Command="{Binding CloseEditorCommand}"
-								HorizontalAlignment="Stretch"
-								Background="Transparent"
-								BorderBrush="{DynamicResource BorderSoft}"
-								BorderThickness="1"
-								CornerRadius="8"
-								Padding="0,8" />
+								HorizontalAlignment="Stretch" />
 						<Button Content="Удалить"
+								Classes="dangerBtn"
 								Command="{Binding DeleteEventCommand}"
 								IsVisible="{Binding IsEditingExisting}"
-								HorizontalAlignment="Stretch"
-								Background="Transparent"
-								Foreground="#D32F2F"
-								BorderBrush="#D32F2F"
-								BorderThickness="1"
-								CornerRadius="8"
-								Padding="0,8" />
+								HorizontalAlignment="Stretch" />
 					</StackPanel>
 				</Grid>
 			</Border>
@@ -520,6 +609,174 @@
 			<Border HorizontalAlignment="Center"
 					VerticalAlignment="Center">
 				<ContentControl Content="{Binding CreateCalendarDialog}" />
+			</Border>
+		</Border>
+
+		<!-- Диалог редактирования календаря + участники -->
+		<Border Grid.RowSpan="3"
+				Classes="dialogOverlay"
+				IsVisible="{Binding IsCalendarEditOpen}"
+				ZIndex="1000">
+			<Border HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Background="{DynamicResource WindowBackground}"
+					CornerRadius="16"
+					BoxShadow="0 8 32 0 #1A000000"
+					Padding="32"
+					Width="480">
+				<StackPanel Spacing="16">
+					<TextBlock Text="Настройки календаря"
+							   FontSize="18"
+							   FontWeight="SemiBold"
+							   Foreground="{DynamicResource LabelPrimary}" />
+
+					<!-- Название -->
+					<StackPanel Spacing="6">
+						<TextBlock Text="Название"
+								   FontSize="13"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<TextBox Text="{Binding EditCalendarName}"
+								 Background="{DynamicResource SurfaceBackground}"
+								 BorderBrush="{DynamicResource BorderSoft}"
+								 CornerRadius="8"
+								 Padding="12,10" />
+					</StackPanel>
+
+					<!-- Цвет -->
+					<StackPanel Spacing="6">
+						<TextBlock Text="Цвет"
+								   FontSize="13"
+								   Foreground="{DynamicResource LabelSecondary}" />
+						<ItemsControl ItemsSource="{Binding EventColors}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="vm:EventColorOptionViewModel">
+									<Button Width="32" Height="32"
+											Padding="0"
+											Background="Transparent"
+											CornerRadius="16"
+											Cursor="Hand"
+											Margin="0,0,8,8"
+											BorderBrush="{DynamicResource AccentPurple}"
+											BorderThickness="0"
+											Command="{Binding $parent[UserControl].((vm:CalendarPageViewModel)DataContext).SelectCalendarColorCommand}"
+											CommandParameter="{Binding}">
+										<Border Width="24" Height="24"
+												CornerRadius="12"
+												Background="{Binding Hex}"
+												HorizontalAlignment="Center"
+												VerticalAlignment="Center" />
+									</Button>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+
+					<!-- Участники (только для группового) -->
+					<StackPanel Spacing="8"
+								IsVisible="{Binding IsSelectedCalendarGroup}">
+						<TextBlock Text="Участники"
+								   FontSize="14"
+								   FontWeight="SemiBold"
+								   Foreground="{DynamicResource LabelPrimary}" />
+
+						<ItemsControl ItemsSource="{Binding SelectedCalendar.Members}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="cal:CalendarMemberDto">
+									<Border Padding="0,4"
+											BorderBrush="{DynamicResource BorderSoft}"
+											BorderThickness="0,0,0,1">
+										<Grid ColumnDefinitions="*,Auto,Auto">
+											<StackPanel Grid.Column="0" Spacing="1">
+												<TextBlock Text="{Binding UserName}"
+														   FontSize="13"
+														   Foreground="{DynamicResource LabelPrimary}" />
+												<TextBlock Text="{Binding Email}"
+														   FontSize="11"
+														   Foreground="{DynamicResource LabelMuted}" />
+											</StackPanel>
+											<ComboBox Grid.Column="1"
+													  SelectedValue="{Binding AccessLevel}"
+													  SelectedValueBinding="{Binding Value}"
+													  Width="140"
+													  Margin="8,0,8,0"
+													  HorizontalAlignment="Right">
+												<ComboBox.ItemsSource>
+													<Binding Path="$parent[UserControl].((vm:CalendarPageViewModel)DataContext).AccessLevels" />
+												</ComboBox.ItemsSource>
+												<ComboBox.ItemTemplate>
+													<DataTemplate x:DataType="vm:AccessLevelOption">
+														<TextBlock Text="{Binding DisplayName}" FontSize="12" />
+													</DataTemplate>
+												</ComboBox.ItemTemplate>
+											</ComboBox>
+											<Button Grid.Column="2"
+													Content="✕"
+													FontSize="12"
+													Padding="6,2"
+													Background="Transparent"
+													BorderThickness="0"
+													Foreground="#D32F2F"
+													Cursor="Hand"
+													Command="{Binding $parent[UserControl].((vm:CalendarPageViewModel)DataContext).RemoveMemberCommand}"
+													CommandParameter="{Binding}" />
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+
+						<!-- Добавить участника -->
+						<Grid ColumnDefinitions="*,Auto,Auto" Margin="0,4,0,0">
+							<TextBox Grid.Column="0"
+									 Text="{Binding NewMemberEmail}"
+									 Watermark="Email пользователя"
+									 Background="{DynamicResource SurfaceBackground}"
+									 BorderBrush="{DynamicResource BorderSoft}"
+									 CornerRadius="8"
+									 Padding="10,8"
+									 Margin="0,0,8,0" />
+							<ComboBox Grid.Column="1"
+									  ItemsSource="{Binding AccessLevels}"
+									  SelectedItem="{Binding NewMemberAccessLevel}"
+									  PlaceholderText="Права"
+									  Width="140"
+									  Margin="0,0,8,0">
+								<ComboBox.ItemTemplate>
+									<DataTemplate x:DataType="vm:AccessLevelOption">
+										<TextBlock Text="{Binding DisplayName}" FontSize="12" />
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+							<Button Grid.Column="2"
+									Content="Добавить"
+									Classes="primaryBtn"
+									Command="{Binding AddMemberCommand}" />
+						</Grid>
+					</StackPanel>
+
+					<!-- Кнопки -->
+					<StackPanel Orientation="Horizontal"
+								Spacing="12"
+								HorizontalAlignment="Right"
+								Margin="0,8,0,0">
+						<Button Content="Удалить"
+								Classes="dangerBtn"
+								IsVisible="{Binding CanDeleteSelectedCalendar}"
+								Command="{Binding DeleteCalendarCommand}" />
+						<Button Content="Отмена"
+								Classes="secondaryBtn"
+								Command="{Binding CloseCalendarEditCommand}" />
+						<Button Content="Сохранить"
+								Classes="primaryBtn"
+								Command="{Binding SaveCalendarCommand}"
+								IsEnabled="{Binding !IsCalendarBusy}" />
+					</StackPanel>
+				</StackPanel>
 			</Border>
 		</Border>
 	</Grid>

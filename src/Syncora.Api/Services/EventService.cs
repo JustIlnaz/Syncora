@@ -141,7 +141,10 @@ namespace Syncora.Services
             if (calendar == null) return null;
 
             var member = await _context.CalendarMembers.FirstOrDefaultAsync(m => m.CalendarId == calendar.Id && m.UserId == userId);
-            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId || (member != null && member.AccessLevel == Syncora.Models.Enums.AccessLevel.Edit);
+            var canEdit = member != null &&
+                (member.AccessLevel == Syncora.Models.Enums.AccessLevel.Edit ||
+                 member.AccessLevel == Syncora.Models.Enums.AccessLevel.Full);
+            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId || canEdit;
             if (!hasAccess) return null;
 
             if (request.Title != null) ev.Title = request.Title;
@@ -179,7 +182,10 @@ namespace Syncora.Services
             if (calendar == null) return false;
 
             var member = await _context.CalendarMembers.FirstOrDefaultAsync(m => m.CalendarId == calendar.Id && m.UserId == userId);
-            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId || (member != null && member.AccessLevel == Syncora.Models.Enums.AccessLevel.Edit);
+            var canEdit = member != null &&
+                (member.AccessLevel == Syncora.Models.Enums.AccessLevel.Edit ||
+                 member.AccessLevel == Syncora.Models.Enums.AccessLevel.Full);
+            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId || canEdit;
             if (!hasAccess) return false;
 
             _context.Events.Remove(ev);

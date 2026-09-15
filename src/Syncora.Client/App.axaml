@@ -20,6 +20,7 @@
   
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://Syncora.Client/Styles/Buttons.axaml"/>
         <Style Selector="CalendarDatePicker">
             <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
             <Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
@@ -48,6 +49,7 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="10,8" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="MinuteIncrement" Value="15" />
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid Name="LayoutRoot">
@@ -65,10 +67,11 @@
                                 VerticalContentAlignment="Center">
                             <Grid Name="PART_FlyoutButtonContentGrid" ColumnDefinitions="*,Auto,*">
                                 <Border x:Name="PART_FirstPickerHost" Grid.Column="0"
+                                        MinWidth="24"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch">
                                     <TextBlock x:Name="PART_HourTextBlock"
-                                               Text="{DynamicResource StringTimePickerHourText}"
+                                               Text="{Binding SelectedTime, RelativeSource={RelativeSource TemplatedParent}, StringFormat='hh'}"
                                                HorizontalAlignment="Center" />
                                 </Border>
                                 <Rectangle Name="PART_FirstColumnDivider"
@@ -77,10 +80,11 @@
                                            HorizontalAlignment="Center"
                                            Width="1" />
                                 <Border x:Name="PART_SecondPickerHost" Grid.Column="2"
+                                        MinWidth="24"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch">
                                     <TextBlock x:Name="PART_MinuteTextBlock"
-                                               Text="{DynamicResource StringTimePickerMinuteText}"
+                                               Text="{Binding SelectedTime, RelativeSource={RelativeSource TemplatedParent}, StringFormat='mm'}"
                                                HorizontalAlignment="Center" />
                                 </Border>
                                 <Rectangle Name="PART_SecondColumnDivider"
@@ -92,7 +96,6 @@
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch">
                                     <TextBlock x:Name="PART_SecondTextBlock"
-                                               Text="{DynamicResource StringTimePickerSecondText}"
                                                HorizontalAlignment="Center" />
                                 </Border>
                                 <Rectangle Name="PART_ThirdColumnDivider"

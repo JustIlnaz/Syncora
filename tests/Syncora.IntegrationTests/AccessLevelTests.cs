@@ -186,12 +186,12 @@ public class AccessLevelTests : IClassFixture<CustomWebApplicationFactory>
 
         var events = await eventsResponse.Content.ReadFromJsonAsync<List<EventDto>>();
         Assert.NotNull(events);
-        var event = events.FirstOrDefault(e => e.CalendarId == calendar.Id);
-        Assert.NotNull(event);
+        var maskedEvent = events.FirstOrDefault(e => e.CalendarId == calendar.Id);
+        Assert.NotNull(maskedEvent);
 
         // Проверяем маскирование деталей
-        Assert.Equal("Занят", event.Title);
-        Assert.Null(event.Description);
+        Assert.Equal("Занят", maskedEvent.Title);
+        Assert.Null(maskedEvent.Description);
     }
 
     [Fact]
@@ -240,12 +240,12 @@ public class AccessLevelTests : IClassFixture<CustomWebApplicationFactory>
 
         var events = await eventsResponse.Content.ReadFromJsonAsync<List<EventDto>>();
         Assert.NotNull(events);
-        var event = events.FirstOrDefault(e => e.CalendarId == calendar.Id);
-        Assert.NotNull(event);
+        var publicEvent = events.FirstOrDefault(e => e.CalendarId == calendar.Id);
+        Assert.NotNull(publicEvent);
 
         // Проверяем полные детали
-        Assert.Equal("Public Meeting", event.Title);
-        Assert.Equal("Public meeting details", event.Description);
+        Assert.Equal("Public Meeting", publicEvent.Title);
+        Assert.Equal("Public meeting details", publicEvent.Description);
     }
 
     [Fact]

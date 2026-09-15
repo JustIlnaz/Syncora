@@ -100,6 +100,9 @@ namespace Syncora.Services
             var calendar = await _context.Calendars.FirstOrDefaultAsync(c => c.Id == calendarId);
             if (calendar == null || calendar.OwnerId != userId) return false;
 
+            if (calendar.Type == Syncora.Models.Enums.CalendarType.Personal)
+                throw new InvalidOperationException("Личный календарь нельзя удалить");
+
             _context.Calendars.Remove(calendar);
             await _context.SaveChangesAsync();
             return true;

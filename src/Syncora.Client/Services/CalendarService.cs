@@ -33,6 +33,10 @@ public class CalendarService
         => _apiClient.PostAsync<AddCalendarMemberRequest, CalendarDto>(
             $"/api/calendars/{calendarId}/members", request);
 
+    public Task<CalendarMemberDto> UpdateMemberAsync(Guid calendarId, Guid userId, UpdateCalendarMemberRequest request)
+        => _apiClient.PutAsync<UpdateCalendarMemberRequest, CalendarMemberDto>(
+            $"/api/calendars/{calendarId}/members/{userId}", request);
+
     public Task RemoveMemberAsync(Guid calendarId, Guid userId)
         => _apiClient.DeleteAsync($"/api/calendars/{calendarId}/members/{userId}");
 }

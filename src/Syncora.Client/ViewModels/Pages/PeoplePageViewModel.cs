@@ -58,9 +58,14 @@ public partial class PeoplePageViewModel : ViewModelBase
     private CalendarDto? selectedCalendar;
 
     [ObservableProperty]
-    private string selectedAccessLevel = "edit";
+    private AccessLevelOption? selectedAccessLevel;
 
-    public List<string> AccessLevels { get; } = new() { "view", "edit", "free-busy" };
+    public List<AccessLevelOption> AccessLevels { get; } = new()
+    {
+        new() { Value = "view", DisplayName = "Просмотр" },
+        new() { Value = "edit", DisplayName = "Редактирование" },
+        new() { Value = "free-busy", DisplayName = "Занят/свободен" },
+    };
 
     public string AddToCalendarTitle => SelectedUser == null
         ? "Добавить в календарь"
@@ -179,7 +184,7 @@ public partial class PeoplePageViewModel : ViewModelBase
         if (user == null) return;
         SelectedUser = user;
         SelectedCalendar = Calendars.FirstOrDefault();
-        SelectedAccessLevel = "edit";
+        SelectedAccessLevel = AccessLevels.First(o => o.Value == "edit");
         IsAddToCalendarOpen = true;
     }
 
@@ -189,7 +194,7 @@ public partial class PeoplePageViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddToCalendarAsync()
     {
-        if (SelectedUser == null || SelectedCalendar == null) return;
+        if (SelectedUser == null || SelectedCalendar == null || SelectedAccessLevel == null) return;
 
         try
         {
@@ -197,7 +202,7 @@ public partial class PeoplePageViewModel : ViewModelBase
             {
                 Email = SelectedUser.Email,
                 Role = "member",
-                AccessLevel = SelectedAccessLevel
+                AccessLevel = SelectedAccessLevel.Value
             });
             IsAddToCalendarOpen = false;
             SuccessMessage = $"{SelectedUser.Name} добавлен в календарь «{SelectedCalendar.Name}».";

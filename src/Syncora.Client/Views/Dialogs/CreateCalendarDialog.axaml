@@ -43,36 +43,7 @@
             <Setter Property="BorderThickness" Value="2" />
         </Style>
 
-        <Style Selector="Button.primaryBtn">
-            <Setter Property="Background" Value="{DynamicResource AccentPurple}" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="16,10" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-        <Style Selector="Button.primaryBtn:pointerover">
-            <Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
-        </Style>
-        <Style Selector="Button.primaryBtn:disabled">
-            <Setter Property="Background" Value="#B8A7FC" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="Opacity" Value="1" />
-        </Style>
-
-        <Style Selector="Button.secondaryBtn">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="16,10" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
-        </Style>
-        <Style Selector="Button.secondaryBtn:pointerover">
-            <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
-        </Style>
+        <!-- Стили кнопок primaryBtn/secondaryBtn — глобальные, см. Styles/Buttons.axaml -->
 
         <Style Selector="TextBlock.errorText">
             <Setter Property="Foreground" Value="#D32F2F" />
@@ -160,9 +131,13 @@
                         Content="Отмена"
                         Command="{Binding CancelCommand}" />
                 <Button Classes="primaryBtn"
-                        Content="Создать"
                         Command="{Binding CreateCommand}"
-                        IsEnabled="{Binding CanCreate}" />
+                        IsEnabled="{Binding CanCreate}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Создать" />
+                        <TextBlock Text="..." IsVisible="{Binding IsCreating}" />
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </StackPanel>
     </Border>

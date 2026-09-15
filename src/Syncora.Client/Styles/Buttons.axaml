@@ -1,0 +1,84 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!-- Единая типографика кнопок Syncora (macOS-style):
+		 FontSize 13, FontWeight SemiBold, CornerRadius 8, Cursor Hand -->
+
+	<!-- Primary: фиолетовая акцентная -->
+	<Style Selector="Button.primaryBtn">
+		<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
+		<Setter Property="Foreground" Value="#FFFFFF" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="CornerRadius" Value="8" />
+		<Setter Property="Padding" Value="14,8" />
+		<Setter Property="Cursor" Value="Hand" />
+		<Setter Property="FontSize" Value="13" />
+		<Setter Property="FontWeight" Value="SemiBold" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="Button.primaryBtn:pointerover">
+		<Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
+	</Style>
+	<Style Selector="Button.primaryBtn:disabled">
+		<Setter Property="Background" Value="#B8A7FC" />
+		<Setter Property="Foreground" Value="#FFFFFF" />
+	</Style>
+
+	<!-- Secondary: прозрачная с мягкой рамкой -->
+	<Style Selector="Button.secondaryBtn">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CornerRadius" Value="8" />
+		<Setter Property="Padding" Value="14,8" />
+		<Setter Property="Cursor" Value="Hand" />
+		<Setter Property="FontSize" Value="13" />
+		<Setter Property="FontWeight" Value="SemiBold" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="Button.secondaryBtn:pointerover">
+		<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
+	</Style>
+	<Style Selector="Button.secondaryBtn.selected">
+		<Setter Property="Background" Value="{DynamicResource AccentPurpleTint}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentPurple}" />
+		<Setter Property="Foreground" Value="{DynamicResource AccentPurpleDark}" />
+	</Style>
+	<Style Selector="Button.secondaryBtn:disabled">
+		<Setter Property="Opacity" Value="0.6" />
+	</Style>
+
+	<!-- Danger: красная контурная -->
+	<Style Selector="Button.dangerBtn">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Foreground" Value="#D32F2F" />
+		<Setter Property="BorderBrush" Value="#D32F2F" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CornerRadius" Value="8" />
+		<Setter Property="Padding" Value="14,8" />
+		<Setter Property="Cursor" Value="Hand" />
+		<Setter Property="FontSize" Value="13" />
+		<Setter Property="FontWeight" Value="SemiBold" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="Button.dangerBtn:pointerover">
+		<Setter Property="Background" Value="#14D32F2F" />
+	</Style>
+	<Style Selector="Button.dangerBtn:disabled">
+		<Setter Property="Opacity" Value="0.6" />
+	</Style>
+
+	<!-- Компактная иконка-кнопка (например, «✕» удалить контакт) -->
+	<Style Selector="Button.dangerBtn.iconBtn">
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="6" />
+		<Setter Property="FontWeight" Value="Normal" />
+		<Setter Property="MinWidth" Value="0" />
+		<Setter Property="MinHeight" Value="0" />
+	</Style>
+
+</Styles>

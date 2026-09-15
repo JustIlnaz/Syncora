@@ -15,6 +15,7 @@ public partial class CreateCalendarDialogViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanCreate))]
+    [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
     private string name = string.Empty;
 
     [ObservableProperty]
@@ -25,6 +26,7 @@ public partial class CreateCalendarDialogViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanCreate))]
+    [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
     private bool isCreating;
 
     partial void OnSelectedColorChanged(string? value)
@@ -97,7 +99,11 @@ public partial class CreateCalendarDialogViewModel : ViewModelBase
             // Успешное создание - закрываем диалог
             OnDialogClosed?.Invoke(true);
         }
-        catch
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
         {
             ErrorMessage = "Не удалось создать календарь. Попробуйте позже.";
         }

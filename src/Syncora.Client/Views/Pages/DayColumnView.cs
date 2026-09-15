@@ -182,6 +182,20 @@ public class DayColumnView : UserControl
                 Foreground = new SolidColorBrush(Color.Parse("#756D88"))
             });
 
+            // Создатель события (чтобы в групповых календарях было видно, чьё событие)
+            if (!string.IsNullOrWhiteSpace(ev.CreatorName))
+            {
+                textStack.Children.Add(new TextBlock
+                {
+                    Text = ev.CreatorName,
+                    FontSize = 10,
+                    FontStyle = FontStyle.Italic,
+                    Foreground = new SolidColorBrush(Color.Parse("#5A4E7C")),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    MaxLines = 1
+                });
+            }
+
             // Описание — только если блок достаточно высокий
             if (ev.HasDescription && ev.Height >= 56)
             {
@@ -223,6 +237,9 @@ public class DayColumnView : UserControl
 
             // Подсказка: описание и тип
             var tipText = ev.IsMeeting ? $"Встреча\n{ev.Title}" : ev.Title;
+            tipText += $"\nКалендарь: {ev.CalendarName}";
+            if (!string.IsNullOrWhiteSpace(ev.CreatorName))
+                tipText += $"\nСоздатель: {ev.CreatorName}";
             if (ev.HasDescription)
                 tipText += $"\n{ev.Description}";
             if (ev.AcceptedParticipants.Count > 0)

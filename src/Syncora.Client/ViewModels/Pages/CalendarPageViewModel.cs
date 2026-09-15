@@ -52,6 +52,10 @@ public partial class CalendarPageViewModel : ViewModelBase
     [ObservableProperty]
     private bool isEditorBusy;
 
+    /// <summary>Может ли текущий пользователь редактировать/удалять открытое событие.</summary>
+    [ObservableProperty]
+    private bool canEditEditingEvent;
+
     [ObservableProperty]
     private Guid editingEventId;
 
@@ -104,9 +108,75 @@ public partial class CalendarPageViewModel : ViewModelBase
     }
 
     public ObservableCollection<CalendarDto> Calendars { get; } = new();
+    /// <summary>Календари, в которых текущий пользователь может создавать события.</summary>
+    public ObservableCollection<CalendarDto> EditableCalendars { get; } = new();
+    public ObservableCollection<CalendarItemViewModel> CalendarItems { get; } = new();
     public ObservableCollection<EventColorOptionViewModel> EventColors { get; } = new();
     public ObservableCollection<WeekDayColumnViewModel> Days { get; } = new();
     public ObservableCollection<string> HourLabels { get; } = new();
+
+    // ---- Выбранный календарь / управление ----
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSelectedCalendarGroup))]
+    [NotifyPropertyChangedFor(nameof(IsSelectedCalendarPersonal))]
+    [NotifyPropertyChangedFor(nameof(IsSelectedCalendarOwner))]
+    [NotifyPropertyChangedFor(nameof(CanManageSelectedCalendar))]
+    [NotifyPropertyChangedFor(nameof(CanDeleteSelectedCalendar))]
+    [NotifyPropertyChangedFor(nameof(SelectedCalendarMembersCountText))]
+    [NotifyPropertyChangedFor(nameof(SelectedCalendarHasMembers))]
+    private CalendarItemViewModel? selectedCalendar;
+
+    [ObservableProperty]
+    private bool isCalendarEditOpen;
+
+    [ObservableProperty]
+    private string editCalendarName = string.Empty;
+
+    [ObservableProperty]
+    private string editCalendarColor = "#A78BFA";
+
+    [ObservableProperty]
+    private bool isCalendarBusy;
+
+    // ---- Участники ----
+    [ObservableProperty]
+    private string newMemberEmail = string.Empty;
+
+    [ObservableProperty]
+    private AccessLevelOption? newMemberAccessLevel;
+
+    public ObservableCollection<AccessLevelOption> AccessLevels { get; } = new()
+    {
+        new() { Value = "view", DisplayName = "Просмотр" },
+        new() { Value = "edit", DisplayName = "Редактирование" },
+        new() { Value = "full", DisplayName = "Полный доступ" },
+        new() { Value = "free-busy", DisplayName = "Занят/свободен" },
+    };
+
+    public bool IsSelectedCalendarGroup =>
+        string.Equals(SelectedCalendar?.Type, "group", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsSelectedCalendarPersonal =>
+        string.Equals(SelectedCalendar?.Type, "personal", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsSelectedCalendarOwner =>
+        SelectedCalendar != null && SelectedCalendar.OwnerId == _currentUserId;
+
+    public bool CanManageSelectedCalendar => IsSelectedCalendarOwner;
+
+    /// <summary>Личный календарь удалять нельзя.</summary>
+    public bool CanDeleteSelectedCalendar => IsSelectedCalendarOwner && !IsSelectedCalendarPersonal;
+
+    public string SelectedCalendarMembersCountText
+    {
+        get
+        {
+            var count = SelectedCalendar?.Members.Count ?? 0;
+            return count == 1 ? "1 участник" : $"{count} участников";
+        }
+    }
+
+    public bool SelectedCalendarHasMembers => (SelectedCalendar?.Members.Count ?? 0) > 0;
 
     public CalendarPageViewModel(
         CalendarService calendarService,
@@ -150,7 +220,7 @@ public partial class CalendarPageViewModel : ViewModelBase
         {
             await LoadCurrentUserAsync();
             await LoadCalendarsAsync();
-            await LoadWeekEventsAsync();
+            await LoadWeekEventsSafeAsync();
         }
         catch (ApiException ex)
         {
@@ -187,17 +257,250 @@ public partial class CalendarPageViewModel : ViewModelBase
         IsCreateCalendarDialogOpen = false;
     }
 
+    // ---- CRUD календаря ----
+
+    [RelayCommand]
+    private void SelectCalendar(CalendarItemViewModel? item)
+    {
+        if (item == null) return;
+        SelectedCalendar = item;
+        EditCalendarName = item.Name;
+        EditCalendarColor = item.Color;
+    }
+
+    [RelayCommand]
+    private void OpenCalendarEdit()
+    {
+        if (SelectedCalendar == null) return;
+        EditCalendarName = SelectedCalendar.Name;
+        EditCalendarColor = SelectedCalendar.Color;
+        IsCalendarEditOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseCalendarEdit()
+    {
+        IsCalendarEditOpen = false;
+    }
+
+    [RelayCommand]
+    private async Task SaveCalendarAsync()
+    {
+        if (SelectedCalendar == null || !CanManageSelectedCalendar) return;
+        if (string.IsNullOrWhiteSpace(EditCalendarName))
+        {
+            ErrorMessage = "Введите название календаря.";
+            return;
+        }
+
+        IsCalendarBusy = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            await _calendarService.UpdateCalendarAsync(SelectedCalendar.Id, new UpdateCalendarRequest
+            {
+                Name = EditCalendarName.Trim(),
+                Color = EditCalendarColor
+            });
+            SuccessMessage = "Календарь обновлён.";
+            IsCalendarEditOpen = false;
+            await LoadCalendarsAsync();
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Не удалось обновить календарь.";
+        }
+        finally
+        {
+            IsCalendarBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteCalendarAsync()
+    {
+        if (SelectedCalendar == null || !CanManageSelectedCalendar) return;
+
+        if (!CanDeleteSelectedCalendar)
+        {
+            ErrorMessage = "Личный календарь нельзя удалить.";
+            return;
+        }
+
+        IsCalendarBusy = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            await _calendarService.DeleteCalendarAsync(SelectedCalendar.Id);
+            SuccessMessage = "Календарь удалён.";
+            IsCalendarEditOpen = false;
+            SelectedCalendar = null;
+            await LoadCalendarsAsync();
+            await LoadWeekEventsSafeAsync();
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Не удалось удалить календарь.";
+        }
+        finally
+        {
+            IsCalendarBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private void SelectCalendarColor(EventColorOptionViewModel? color)
+    {
+        if (color == null) return;
+        EditCalendarColor = color.Hex;
+    }
+
+    // ---- Участники календаря ----
+
+    [RelayCommand]
+    private async Task AddMemberAsync()
+    {
+        if (SelectedCalendar == null || !CanManageSelectedCalendar) return;
+        if (string.IsNullOrWhiteSpace(NewMemberEmail))
+        {
+            ErrorMessage = "Введите email пользователя.";
+            return;
+        }
+
+        IsCalendarBusy = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            await _calendarService.AddMemberAsync(SelectedCalendar.Id, new AddCalendarMemberRequest
+            {
+                Email = NewMemberEmail.Trim(),
+                Role = "member",
+                AccessLevel = NewMemberAccessLevel?.Value ?? "edit"
+            });
+            SuccessMessage = "Участник добавлен.";
+            NewMemberEmail = string.Empty;
+            NewMemberAccessLevel = null;
+            await LoadCalendarsAsync();
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Не удалось добавить участника.";
+        }
+        finally
+        {
+            IsCalendarBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task UpdateMemberAccessAsync(CalendarMemberDto? member)
+    {
+        if (member == null || SelectedCalendar == null || !CanManageSelectedCalendar) return;
+
+        IsCalendarBusy = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            await _calendarService.UpdateMemberAsync(SelectedCalendar.Id, member.UserId,
+                new UpdateCalendarMemberRequest { AccessLevel = member.AccessLevel });
+            SuccessMessage = "Права обновлены.";
+            await LoadCalendarsAsync();
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Не удалось обновить права.";
+        }
+        finally
+        {
+            IsCalendarBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task RemoveMemberAsync(CalendarMemberDto? member)
+    {
+        if (member == null || SelectedCalendar == null || !CanManageSelectedCalendar) return;
+
+        IsCalendarBusy = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            await _calendarService.RemoveMemberAsync(SelectedCalendar.Id, member.UserId);
+            SuccessMessage = "Участник удалён.";
+            await LoadCalendarsAsync();
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Не удалось удалить участника.";
+        }
+        finally
+        {
+            IsCalendarBusy = false;
+        }
+    }
+
     private async Task LoadCalendarsAsync()
     {
         var calendars = await _calendarService.GetCalendarsAsync();
 
         var selectedId = EditCalendar?.Id;
-        Calendars.Clear();
-        foreach (var c in calendars)
-            Calendars.Add(c);
+        var selectedItemId = SelectedCalendar?.Id;
+        var previousVisibility = CalendarItems.ToDictionary(c => c.Id, c => c.IsVisible);
 
-        EditCalendar = Calendars.FirstOrDefault(c => c.Id == selectedId)
-            ?? Calendars.FirstOrDefault();
+        Calendars.Clear();
+        CalendarItems.Clear();
+        foreach (var c in calendars)
+        {
+            Calendars.Add(c);
+            var item = new CalendarItemViewModel(c, _currentUserId);
+
+            // Сохраняем выбор видимости пользователя между перезагрузками списка
+            if (previousVisibility.TryGetValue(item.Id, out var wasVisible))
+                item.IsVisible = wasVisible;
+
+            // При переключении галочки сразу перестраиваем события на сетке
+            item.PropertyChanged += async (_, e) =>
+            {
+                if (e.PropertyName == nameof(CalendarItemViewModel.IsVisible))
+                    await LoadWeekEventsSafeAsync();
+            };
+
+            CalendarItems.Add(item);
+        }
+
+        // Календари, в которые можно создавать события (владелец, full или edit)
+        EditableCalendars.Clear();
+        foreach (var item in CalendarItems.Where(i => i.CanEdit))
+        {
+            var dto = Calendars.First(c => c.Id == item.Id);
+            EditableCalendars.Add(dto);
+        }
+
+        EditCalendar = EditableCalendars.FirstOrDefault(c => c.Id == selectedId)
+            ?? EditableCalendars.FirstOrDefault();
+
+        SelectedCalendar = CalendarItems.FirstOrDefault(c => c.Id == selectedItemId)
+            ?? CalendarItems.FirstOrDefault();
     }
 
     partial void OnEditCalendarChanged(CalendarDto? value)
@@ -238,6 +541,15 @@ public partial class CalendarPageViewModel : ViewModelBase
     {
         Days.Clear();
 
+        var visibleIds = CalendarItems
+            .Where(c => c.IsVisible)
+            .Select(c => c.Id)
+            .ToHashSet();
+
+        var filtered = CalendarItems.Count == 0
+            ? events
+            : events.Where(e => visibleIds.Contains(e.CalendarId)).ToList();
+
         for (int i = 0; i < 7; i++)
         {
             var date = CurrentWeekStart.AddDays(i);
@@ -247,7 +559,7 @@ public partial class CalendarPageViewModel : ViewModelBase
                 IsToday = date == DateTime.Today
             };
 
-            var dayEvents = events
+            var dayEvents = filtered
                 .Select(e => (evt: e, local: ToLocalInterval(e)))
                 .Where(x => x.local.Start.Date == date && !x.evt.IsAllDay)
                 .OrderBy(x => x.local.Start)
@@ -299,6 +611,7 @@ public partial class CalendarPageViewModel : ViewModelBase
                         Id = item.Evt.Id,
                         Title = item.Evt.Title,
                         CalendarName = item.Evt.CalendarName,
+                        CreatorName = item.Evt.CreatorName,
                         TimeText = $"{item.Start:HH:mm} – {item.End:HH:mm}",
                         ColorHex = NormalizeColor(item.Evt.Color ?? item.Evt.CalendarColor),
                         MeetingId = item.Evt.MeetingId,
@@ -386,13 +699,14 @@ public partial class CalendarPageViewModel : ViewModelBase
     [RelayCommand]
     private void OpenCreateEditor()
     {
-        if (Calendars.Count == 0)
+        if (EditableCalendars.Count == 0)
         {
-            ErrorMessage = "Сначала создайте календарь.";
+            ErrorMessage = "Нет календаря, в который вы можете добавлять события.";
             return;
         }
 
         IsEditingExisting = false;
+        CanEditEditingEvent = true;
         EditingEventId = Guid.Empty;
         EditTitle = string.Empty;
         EditDescription = null;
@@ -401,7 +715,7 @@ public partial class CalendarPageViewModel : ViewModelBase
         EditDate = DateTime.Today;
         EditStartTime = new TimeSpan(10, 0, 0);
         EditEndTime = new TimeSpan(11, 0, 0);
-        EditCalendar ??= Calendars.FirstOrDefault();
+        EditCalendar ??= EditableCalendars.FirstOrDefault();
         ErrorMessage = string.Empty;
         SuccessMessage = string.Empty;
         IsEditorOpen = true;
@@ -445,6 +759,11 @@ public partial class CalendarPageViewModel : ViewModelBase
             EditCalendar = Calendars.FirstOrDefault(c => c.Id == evt.CalendarId)
                 ?? Calendars.FirstOrDefault();
 
+            // Редактировать можно, если есть доступ на запись к календарю
+            // или текущий пользователь — создатель события
+            var calendarItem = CalendarItems.FirstOrDefault(c => c.Id == evt.CalendarId);
+            CanEditEditingEvent = calendarItem?.CanEdit == true || evt.CreatorId == _currentUserId;
+
             ErrorMessage = string.Empty;
             SuccessMessage = string.Empty;
             IsEditorOpen = true;
@@ -466,6 +785,12 @@ public partial class CalendarPageViewModel : ViewModelBase
     {
         ErrorMessage = string.Empty;
         SuccessMessage = string.Empty;
+
+        if (!CanEditEditingEvent)
+        {
+            ErrorMessage = "У вас нет прав на изменение этого события.";
+            return;
+        }
 
         if (string.IsNullOrWhiteSpace(EditTitle))
         {
@@ -606,6 +931,9 @@ public partial class EventBlockViewModel : ObservableObject
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string CalendarName { get; set; } = string.Empty;
+
+    /// <summary>Имя создателя события (отображается в групповых календарях).</summary>
+    public string CreatorName { get; set; } = string.Empty;
     public string TimeText { get; set; } = string.Empty;
     public string ColorHex { get; set; } = "#8B70FB";
 
@@ -663,4 +991,56 @@ public partial class EventColorOptionViewModel : ObservableObject
         yield return new EventColorOptionViewModel { Hex = "#C084FC", Name = "Фиолетовый" };
         yield return new EventColorOptionViewModel { Hex = "#8E99F3", Name = "Индиго" };
     }
+}
+
+public partial class CalendarItemViewModel : ObservableObject
+{
+    public CalendarItemViewModel(CalendarDto dto, Guid currentUserId)
+    {
+        Id = dto.Id;
+        OwnerId = dto.OwnerId;
+        Name = dto.Name;
+        Color = dto.Color ?? "#A78BFA";
+        Type = dto.Type ?? "personal";
+        Description = dto.Description;
+        Members = dto.Members;
+        IsOwner = dto.OwnerId == currentUserId;
+        MyAccessLevel = dto.Members
+            .FirstOrDefault(m => m.UserId == currentUserId)?.AccessLevel;
+        IsVisible = true;
+    }
+
+    public Guid Id { get; }
+    public Guid OwnerId { get; }
+    public string Name { get; }
+    public string Color { get; }
+    public string Type { get; }
+    public string? Description { get; }
+    public List<CalendarMemberDto> Members { get; }
+    public bool IsOwner { get; }
+
+    /// <summary>Уровень доступа текущего пользователя к этому календарю (full/edit/view/free-busy).</summary>
+    public string? MyAccessLevel { get; }
+
+    /// <summary>Может ли текущий пользователь создавать/изменять события в этом календаре.</summary>
+    public bool CanEdit => IsOwner
+        || string.Equals(MyAccessLevel, "full", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(MyAccessLevel, "edit", StringComparison.OrdinalIgnoreCase);
+
+    [ObservableProperty]
+    private bool isVisible;
+
+    public string TypeDisplayName => Type switch
+    {
+        "personal" => "Личный",
+        "work" => "Рабочий",
+        "group" => "Групповой",
+        _ => Type
+    };
+}
+
+public class AccessLevelOption
+{
+    public string Value { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
 }

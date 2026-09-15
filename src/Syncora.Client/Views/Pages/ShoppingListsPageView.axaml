@@ -14,39 +14,7 @@
 			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
 		</Style>
 
-		<Style Selector="Button.primaryBtn">
-			<Setter Property="Background" Value="{DynamicResource AccentPurple}" />
-			<Setter Property="Foreground" Value="#FFFFFF" />
-			<Setter Property="BorderThickness" Value="0" />
-			<Setter Property="CornerRadius" Value="8" />
-			<Setter Property="Padding" Value="14,8" />
-			<Setter Property="Cursor" Value="Hand" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-		</Style>
-		<Style Selector="Button.primaryBtn:pointerover">
-			<Setter Property="Background" Value="{DynamicResource AccentPurpleDark}" />
-		</Style>
-
-		<Style Selector="Button.secondaryBtn">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="CornerRadius" Value="8" />
-			<Setter Property="Padding" Value="10,6" />
-			<Setter Property="Cursor" Value="Hand" />
-			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
-		</Style>
-		<Style Selector="Button.secondaryBtn:pointerover">
-			<Setter Property="Background" Value="{DynamicResource SurfaceSecondary}" />
-		</Style>
-
-		<Style Selector="Button.dangerBtn">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="Foreground" Value="#D32F2F" />
-			<Setter Property="BorderThickness" Value="0" />
-			<Setter Property="Padding" Value="6" />
-			<Setter Property="Cursor" Value="Hand" />
-		</Style>
+		<!-- Стили кнопок primaryBtn/secondaryBtn/dangerBtn — глобальные, см. Styles/Buttons.axaml -->
 
 		<Style Selector="TextBlock.sectionTitle">
 			<Setter Property="FontSize" Value="16" />
@@ -181,7 +149,7 @@
 								Command="{Binding OpenAddItemCommand}"
 								Margin="0,0,8,0" />
 						<Button Grid.Column="3"
-								Classes="dangerBtn"
+								Classes="dangerBtn iconBtn"
 								Content="✕"
 								Command="{Binding DeleteListCommand}"
 								CommandParameter="{Binding SelectedList}" />
@@ -213,7 +181,7 @@
 											<Run Text="{Binding Quantity, StringFormat='{}{0} шт.'}" />
 										</TextBlock>
 										<Button Grid.Column="3"
-												Classes="dangerBtn"
+												Classes="dangerBtn iconBtn"
 												Content="✕"
 												Command="{Binding #Root.((vm:ShoppingListsPageViewModel)DataContext).DeleteItemCommand}"
 												CommandParameter="{Binding}" />
@@ -243,7 +211,7 @@
 														   VerticalAlignment="Center" />
 											</StackPanel>
 											<Button Grid.Column="1"
-													Classes="dangerBtn"
+													Classes="dangerBtn iconBtn"
 													Content="✕"
 													Command="{Binding #Root.((vm:ShoppingListsPageViewModel)DataContext).RemoveMemberCommand}"
 													CommandParameter="{Binding}" />

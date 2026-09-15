@@ -43,8 +43,15 @@ namespace Syncora.Controllers
         public async Task<IActionResult> Create([FromBody] CreateCalendarRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await _calendarService.CreateAsync(request, CurrentUserId);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            try
+            {
+                var result = await _calendarService.CreateAsync(request, CurrentUserId);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
