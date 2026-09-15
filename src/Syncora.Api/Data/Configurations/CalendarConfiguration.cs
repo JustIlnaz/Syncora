@@ -13,7 +13,9 @@ namespace Syncora.Data.Configurations
 
             builder.Property(c => c.Name).HasMaxLength(100).IsRequired();
             builder.Property(c => c.Color).HasMaxLength(20);
-            builder.Property(c => c.Type).HasMaxLength(20);
+            builder.Property(c => c.Type)
+                   .HasConversion(Syncora.Data.Converters.CalendarEnumMapper.CalendarTypeConverter)
+                   .HasMaxLength(20);
             builder.Property(c => c.Description);
             builder.Property(c => c.Timezone).HasMaxLength(50);
 

@@ -2,6 +2,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:vm="using:Syncora.Client.ViewModels.Pages"
 			 xmlns:pages="using:Syncora.Client.Views.Pages"
+			 xmlns:dialogs="using:Syncora.Client.Views.Dialogs"
 			 xmlns:conv="using:Syncora.Client.Converters"
 			 xmlns:cal="using:Syncora.Client.Models.Calendar"
 			 xmlns:sys="using:System"
@@ -15,6 +16,12 @@
 			<Setter Property="FontSize" Value="22" />
 			<Setter Property="FontWeight" Value="SemiBold" />
 			<Setter Property="Foreground" Value="{DynamicResource LabelPrimary}" />
+		</Style>
+
+		<!-- Диалог создания календаря -->
+		<Style Selector="Border.dialogOverlay">
+			<Setter Property="Background" Value="#80000000" />
+			<Setter Property="IsHitTestVisible" Value="True" />
 		</Style>
 
 		<!-- Кнопки навигации недели -->
@@ -164,6 +171,9 @@
 				</Button>
 				<Button Classes="primaryBtn" Command="{Binding OpenCreateEditorCommand}" Margin="8,0,0,0">
 					+ Событие
+				</Button>
+				<Button Classes="primaryBtn" Command="{Binding OpenCreateCalendarDialogCommand}" Margin="8,0,0,0">
+					+ Календарь
 				</Button>
 			</StackPanel>
 		</Grid>
@@ -501,5 +511,16 @@
 				</Grid>
 			</Border>
 		</Grid>
+
+		<!-- Диалог создания календаря -->
+		<Border Grid.RowSpan="3"
+				Classes="dialogOverlay"
+				IsVisible="{Binding IsCreateCalendarDialogOpen}"
+				ZIndex="1000">
+			<Border HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<ContentControl Content="{Binding CreateCalendarDialog}" />
+			</Border>
+		</Border>
 	</Grid>
 </UserControl>

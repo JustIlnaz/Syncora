@@ -1,3 +1,5 @@
+using CommunityToolkit.Mvvm.Messaging;
+using Syncora.Client.Messages;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -125,10 +127,17 @@ public class ApiClient
         return response;
     }
 
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response)
+    private async Task EnsureSuccessAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)
             return;
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            ClearToken();
+            WeakReferenceMessenger.Default.Send(new LogoutMessage());
+            throw new ApiException(response.StatusCode, "Сессия истекла. Войдите снова.");
+        }
 
         var errorContent = await response.Content.ReadAsStringAsync();
 

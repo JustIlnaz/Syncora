@@ -106,7 +106,7 @@ public partial class PeoplePageViewModel : ViewModelBase
         {
             var result = await _calendarService.GetCalendarsAsync();
             Calendars = new ObservableCollection<CalendarDto>(
-                result.Where(c => c.Type == "group" || c.Type == "GROUP"));
+                result.Where(c => c.Type?.Equals("group", StringComparison.OrdinalIgnoreCase) == true));
         }
         catch { /* игнорируем */ }
     }

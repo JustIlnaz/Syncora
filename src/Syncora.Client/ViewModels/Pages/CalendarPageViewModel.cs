@@ -5,6 +5,7 @@ using Syncora.Client.Messages;
 using Syncora.Client.Models.Calendar;
 using Syncora.Client.Models.Event;
 using Syncora.Client.Services;
+using Syncora.Client.ViewModels.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -78,6 +79,16 @@ public partial class CalendarPageViewModel : ViewModelBase
     [ObservableProperty]
     private string selectedEventColor = "#8B70FB";
 
+    [ObservableProperty]
+    private bool isCreateCalendarDialogOpen;
+
+    private CreateCalendarDialogViewModel? _createCalendarDialog;
+
+    public CreateCalendarDialogViewModel? CreateCalendarDialog
+    {
+        get => _createCalendarDialog;
+        private set => SetProperty(ref _createCalendarDialog, value);
+    }
     /// <summary>Имена участников встречи, принявших приглашение.</summary>
     public bool HasAcceptedParticipants => EditAcceptedParticipants.Count > 0;
 
@@ -153,6 +164,27 @@ public partial class CalendarPageViewModel : ViewModelBase
         {
             IsLoading = false;
         }
+    }
+
+    [RelayCommand]
+    private void OpenCreateCalendarDialog()
+    {
+        CreateCalendarDialog = new CreateCalendarDialogViewModel(_calendarService);
+        CreateCalendarDialog.OnDialogClosed = async (success) =>
+        {
+            if (success)
+            {
+                await LoadCalendarsAsync();
+            }
+            IsCreateCalendarDialogOpen = false;
+        };
+        IsCreateCalendarDialogOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseCreateCalendarDialog()
+    {
+        IsCreateCalendarDialogOpen = false;
     }
 
     private async Task LoadCalendarsAsync()

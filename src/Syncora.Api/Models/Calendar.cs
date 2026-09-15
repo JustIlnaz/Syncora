@@ -16,8 +16,7 @@ namespace Syncora.Models
         [MaxLength(20)]
         public string? Color { get; set; }
 
-        [MaxLength(20)]
-        public string? Type { get; set; }
+        public Syncora.Models.Enums.CalendarType Type { get; set; } = Syncora.Models.Enums.CalendarType.Personal;
 
         public string? Description { get; set; }
 

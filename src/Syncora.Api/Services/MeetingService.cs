@@ -263,7 +263,7 @@ namespace Syncora.Services
             foreach (var participantId in participantIds)
             {
                 var calendar = await _context.Calendars
-                    .FirstOrDefaultAsync(c => c.OwnerId == participantId && c.Type == "personal");
+                    .FirstOrDefaultAsync(c => c.OwnerId == participantId && c.Type == Syncora.Models.Enums.CalendarType.Personal);
 
                 if (calendar == null)
                 {
@@ -273,7 +273,7 @@ namespace Syncora.Services
                         OwnerId = participantId,
                         Name = "Личный",
                         Color = "#A78BFA",
-                        Type = "personal",
+                        Type = Syncora.Models.Enums.CalendarType.Personal,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };

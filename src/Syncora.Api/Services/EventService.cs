@@ -30,8 +30,19 @@ namespace Syncora.Services
                 .OrderBy(e => e.StartAt)
                 .ToListAsync();
 
+            // determine access levels of the current user for each calendar
+            var memberAccess = await _context.CalendarMembers
+                .Where(m => m.UserId == userId && calendarIds.Contains(m.CalendarId))
+                .ToDictionaryAsync(m => m.CalendarId, m => m.AccessLevel);
+
             var acceptedNames = await GetAcceptedParticipantNamesAsync(events);
-            return events.Select(e => MapToDto(e, acceptedNames)).ToList();
+            return events.Select(e =>
+            {
+                var mask = false;
+                if (e.Calendar != null && e.Calendar.OwnerId == userId) mask = false;
+                else if (memberAccess.TryGetValue(e.CalendarId, out var access) && access == Syncora.Models.Enums.AccessLevel.FreeBusy) mask = true;
+                return MapToDto(e, acceptedNames, mask);
+            }).ToList();
         }
 
         public async Task<EventDto?> GetByIdAsync(Guid eventId, Guid userId)
@@ -51,7 +62,11 @@ namespace Syncora.Services
             if (!hasAccess) return null;
 
             var acceptedNames = await GetAcceptedParticipantNamesAsync(new List<Event> { ev });
-            return MapToDto(ev, acceptedNames);
+
+            // determine if current user has free-busy access
+            var calendarMember = await _context.CalendarMembers.FirstOrDefaultAsync(m => m.CalendarId == ev.CalendarId && m.UserId == userId);
+            var mask = calendarMember != null && calendarMember.AccessLevel == Syncora.Models.Enums.AccessLevel.FreeBusy && ev.Calendar?.OwnerId != userId && ev.CreatorId != userId;
+            return MapToDto(ev, acceptedNames, mask);
         }
 
         /// <summary>Имена участников встреч (accepted), сгруппированные по MeetingId.</summary>
@@ -79,7 +94,7 @@ namespace Syncora.Services
             var hasAccess = await _context.Calendars
                 .AnyAsync(c => c.Id == request.CalendarId &&
                                (c.OwnerId == userId ||
-                                c.Members.Any(m => m.UserId == userId && m.AccessLevel != "view")));
+                                c.Members.Any(m => m.UserId == userId && (m.AccessLevel == Syncora.Models.Enums.AccessLevel.Full || m.AccessLevel == Syncora.Models.Enums.AccessLevel.Edit))));
 
             if (!hasAccess)
                 throw new UnauthorizedAccessException("Нет доступа к этому календарю");
@@ -125,7 +140,8 @@ namespace Syncora.Services
             var calendar = await _context.Calendars.FirstOrDefaultAsync(c => c.Id == ev.CalendarId);
             if (calendar == null) return null;
 
-            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId;
+            var member = await _context.CalendarMembers.FirstOrDefaultAsync(m => m.CalendarId == calendar.Id && m.UserId == userId);
+            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId || (member != null && member.AccessLevel == Syncora.Models.Enums.AccessLevel.Edit);
             if (!hasAccess) return null;
 
             if (request.Title != null) ev.Title = request.Title;
@@ -162,7 +178,8 @@ namespace Syncora.Services
             var calendar = await _context.Calendars.FirstOrDefaultAsync(c => c.Id == ev.CalendarId);
             if (calendar == null) return false;
 
-            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId;
+            var member = await _context.CalendarMembers.FirstOrDefaultAsync(m => m.CalendarId == calendar.Id && m.UserId == userId);
+            var hasAccess = ev.CreatorId == userId || calendar.OwnerId == userId || (member != null && member.AccessLevel == Syncora.Models.Enums.AccessLevel.Edit);
             if (!hasAccess) return false;
 
             _context.Events.Remove(ev);
@@ -170,8 +187,32 @@ namespace Syncora.Services
             return true;
         }
 
-        private static EventDto MapToDto(Event e, Dictionary<Guid, List<string>>? acceptedNames = null)
+        private static EventDto MapToDto(Event e, Dictionary<Guid, List<string>>? acceptedNames = null, bool mask = false)
         {
+            if (mask)
+            {
+                return new EventDto
+                {
+                    Id = e.Id,
+                    CalendarId = e.CalendarId,
+                    CalendarName = e.Calendar?.Name ?? "",
+                    CalendarColor = e.Calendar?.Color,
+                    CreatorId = e.CreatorId,
+                    MeetingId = e.MeetingId,
+                    CreatorName = e.Creator?.Name ?? "",
+                    Title = "Занят",
+                    Description = null,
+                    Color = null,
+                    StartAt = e.StartAt,
+                    EndAt = e.EndAt,
+                    Location = null,
+                    IsAllDay = e.IsAllDay,
+                    CreatedAt = e.CreatedAt,
+                    AcceptedParticipants = new List<string>(),
+                    Recurrence = null
+                };
+            }
+
             return new EventDto
             {
                 Id = e.Id,

@@ -156,31 +156,36 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    var context = services.GetRequiredService<SyncoraDbContext>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        var context = services.GetRequiredService<SyncoraDbContext>();
 
-    try
-    {
-        await context.Database.MigrateAsync();
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error while applying EF migrations.");
-    }
+        try
+        {
+            await context.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while applying EF migrations.");
+        }
 
-    // Always patch missing columns even if a migration failed previously.
-    try
-    {
-        await DbInitializer.EnsureSchemaAsync(context);
-        await DbInitializer.InitializeAsync(context);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error while initializing database.");
+        // Always patch missing columns even if a migration failed previously.
+        try
+        {
+            await DbInitializer.EnsureSchemaAsync(context);
+            await DbInitializer.InitializeAsync(context);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while initializing database.");
+        }
     }
 }
 
 app.Run();
+
+public partial class Program { }

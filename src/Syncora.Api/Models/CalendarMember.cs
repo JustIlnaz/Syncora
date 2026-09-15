@@ -11,11 +11,9 @@ namespace Syncora.Models
         public Guid CalendarId { get; set; }
         public Guid UserId { get; set; }
 
-        [MaxLength(20)]
-        public string? Role { get; set; }
+        public Syncora.Models.Enums.CalendarRole Role { get; set; } = Syncora.Models.Enums.CalendarRole.Member;
 
-        [MaxLength(20)]
-        public string? AccessLevel { get; set; }
+        public Syncora.Models.Enums.AccessLevel AccessLevel { get; set; } = Syncora.Models.Enums.AccessLevel.Edit;
 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

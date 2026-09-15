@@ -11,8 +11,14 @@ namespace Syncora.Data.Configurations
             builder.ToTable("calendar_members");
             builder.HasKey(cm => cm.Id);
 
-            builder.Property(cm => cm.Role).HasMaxLength(20);
-            builder.Property(cm => cm.AccessLevel).HasMaxLength(20);
+            // store enums as legacy strings in DB ("owner","member","full","edit","view","free-busy")
+            builder.Property(cm => cm.Role)
+                   .HasConversion(Syncora.Data.Converters.CalendarEnumMapper.RoleConverter)
+                   .HasMaxLength(20);
+
+            builder.Property(cm => cm.AccessLevel)
+                   .HasConversion(Syncora.Data.Converters.CalendarEnumMapper.AccessLevelConverter)
+                   .HasMaxLength(20);
 
             builder.Property(cm => cm.CreatedAt).IsRequired();
             builder.Property(cm => cm.UpdatedAt).IsRequired();

@@ -37,7 +37,7 @@ namespace Syncora.Middleware
 
             var statusCode = exception switch
             {
-                UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+                UnauthorizedAccessException => HttpStatusCode.Forbidden, // 403 для ошибок доступа (ТЗ §19)
                 InvalidOperationException => HttpStatusCode.Conflict,
                 ArgumentException => HttpStatusCode.BadRequest,
                 KeyNotFoundException => HttpStatusCode.NotFound,
